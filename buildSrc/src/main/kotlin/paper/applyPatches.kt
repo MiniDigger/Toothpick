@@ -74,7 +74,7 @@ fun applyPatches(project: Project): Task {
             // find needed files
             val patchDir = File(basedir, "Spigot-Server-Patches")
             val files = hashSetOf<String>()
-            patchDir.listFiles()?.forEach {
+            patchDir.listFiles()?.sorted()?.forEach {
                 val content = it.readLines()
                 content.forEach {
                     if (it.startsWith("+++ b/src/main/java/net/minecraft/server/")) {
@@ -148,6 +148,7 @@ private fun applyPatch(what: File, target: File, branch: String, logger: Logger)
 
     val patchesDir = File("${target.parent}/${what.name}-Patches/")
     val patches = patchesDir.listFiles()
+    	    ?.sorted()
             ?.filter { it.name.endsWith(".patch") }
             ?.takeIf { it.isNotEmpty() } ?: return
     val gitCommand = arrayListOf("git", "-c", "commit.gpgsign=false", "am", "--3way", "--ignore-whitespace")

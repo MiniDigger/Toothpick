@@ -90,6 +90,7 @@ fun Project.initToothPickTasks() = run {
                 // Nuke old patches
                 patchesDir.listFiles()
                         ?.filter { it.name.endsWith(".patch") }
+			?.sorted()
                         ?.forEach { it.delete() }
 
                 // And generate new

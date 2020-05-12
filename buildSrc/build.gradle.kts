@@ -22,6 +22,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
     implementation("org.cadixdev:mercury:$mercuryVersion")
     implementation("org.cadixdev:lorenz:$lorenzVersion")
+    implementation("org.cadixdev:lorenz-asm:$lorenzVersion")
     implementation("org.cadixdev:lorenz-io-proguard:$lorenzVersion")
     implementation("org.cadixdev:atlas:$atlasVersion")
     implementation("org.cadixdev:bombe:$bombeVersion")
