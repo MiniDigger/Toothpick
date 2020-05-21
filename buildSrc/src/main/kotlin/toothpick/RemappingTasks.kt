@@ -15,12 +15,15 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.kotlin.dsl.creating
 import org.gradle.kotlin.dsl.getValue
-import paper.*
+import paper.minecraftversion
+import paper.runGitCmd
 import stuff.taskGroupPrivate
 import java.io.File
+import java.io.FileWriter
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
 
 fun initRemappingTasks(project: Project): List<Task> {
     val createMappings: Task by project.tasks.creating {
@@ -109,7 +112,7 @@ fun initRemappingTasks(project: Project): List<Task> {
                 ensureSuccess(cmd("git", "clone", paper.absolutePath, remapped.absolutePath, directory = project.projectDir))
             }
 
-            ensureSuccess(cmd("git", "am", "--3way",  project.projectDir.resolve("toothpick/preremapping.patch").absolutePath, directory = paper))
+            ensureSuccess(cmd("git", "am", "--3way", project.projectDir.resolve("toothpick/preremapping.patch").absolutePath, directory = paper))
 
             // TODO fix me, we are losing paper-servers resources folder here
             if (Files.isDirectory(outputDir)) {
