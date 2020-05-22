@@ -135,7 +135,10 @@ fun initRemappingTasks(project: Project): List<Task> {
 
             project.subprojects.filter { p -> p.name == "fake" }.forEach { p ->
                 p.configurations.filter { config -> config.isCanBeResolved }.forEach { config ->
-                    config.resolvedConfiguration.files.filter { file -> !file.absolutePath.contains("build/classes") }.forEach { file ->
+                    config.resolvedConfiguration.files.filter {
+                        file -> !(file.absolutePath.contains("build/classes")
+                            || file.absolutePath.contains("build\\classes"))
+                    }.forEach { file ->
                         mercury.classPath.add(file.toPath())
                     }
                 }
