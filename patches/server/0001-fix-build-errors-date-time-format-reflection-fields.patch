@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: ysl3000 <yannicklamprecht@live.de>
 Date: Sat, 23 May 2020 18:20:28 +0200
-Subject: [PATCH] fix-build-errors
+Subject: [PATCH] fix-build-errors-date-time-format-reflection-fields
 
 
 diff --git a/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java b/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java
@@ -714,6 +714,19 @@ index 915c3b2e61b6600de98451d51c2b0adbd20cb894..243d44f7e71f662bec43f7dc009f6259
      public ServerChunkCache getChunkSourceOH() {
          return (ServerChunkCache) super.getChunkSource();
      }
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 85dfc3dbcae6e90ddfa669bf98b41a4de5b0c8f3..ce7dc33cf6993c440fc273283eb420dd8fb4a257 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -213,7 +213,7 @@ public class ServerGamePacketListenerImpl implements ServerGamePacketListener {
+     private long keepAliveChallenge; private void setKeepAliveID(long keepAliveID) { this.keepAliveChallenge = keepAliveID;}; private long getKeepAliveID() {return this.keepAliveChallenge; };  // Paper - OBFHELPER
+     // CraftBukkit start - multithreaded fields
+     private volatile int chatSpamTickCount;
+-    private static final AtomicIntegerFieldUpdater chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerGamePacketListenerImpl.class, "chatThrottle");
++    private static final AtomicIntegerFieldUpdater chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerGamePacketListenerImpl.class, "chatSpamTickCount");
+     private final java.util.concurrent.atomic.AtomicInteger tabSpamLimiter = new java.util.concurrent.atomic.AtomicInteger(); // Paper - configurable tab spam limits
+     // CraftBukkit end
+     private int dropSpamTickCount;
 diff --git a/src/main/java/net/minecraft/server/players/GameProfileCache.java b/src/main/java/net/minecraft/server/players/GameProfileCache.java
 index 3b661ac25b12ce75b81d2104c2ec13991dcb4954..0d8ebc1b152eb3aafd9653d3079b71e53788593e 100644
 --- a/src/main/java/net/minecraft/server/players/GameProfileCache.java
@@ -740,7 +753,7 @@ index 3eb8b43a59c4fc0f1f4a7d8bf5daa2455bb7e430..4fff8d734244489c50a94e0ce331a7a7
          return DataFixers.DATA_FIXER;
      }
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index ac0be2d7f6544bcf05a3305ae9802ddd19a72389..79897fc6802732b862c363027b7199be2056d7ad 100644
+index ac0be2d7f6544bcf05a3305ae9802ddd19a72389..d02a1fac32e7ab6b75731ddc245f42d36063c1b2 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -171,7 +171,7 @@ public abstract class Entity implements Nameable, CommandSource, KeyedObject { /
@@ -752,6 +765,22 @@ index ac0be2d7f6544bcf05a3305ae9802ddd19a72389..79897fc6802732b862c363027b7199be
      public Throwable addedToWorldStack; // Paper - entity debug
      public CraftEntity getBukkitEntity() {
          if (bukkitEntity == null) {
+@@ -313,11 +313,11 @@ public abstract class Entity implements Nameable, CommandSource, KeyedObject { /
+         Boolean hardCollides = cachedOverrides.get(this.getClass());
+         if (hardCollides == null) {
+             try {
+-                Object getHardCollisionBoxMethod = Entity.class.getMethod("au");
+-                Object getHardCollisionBoxEntityMethod = Entity.class.getMethod("j", Entity.class);
+-                if (!this.getClass().getMethod("au").equals(getHardCollisionBoxMethod)) {
++                Object getHardCollisionBoxMethod = Entity.class.getMethod("getCollideBox");
++                Object getHardCollisionBoxEntityMethod = Entity.class.getMethod("getCollideAgainstBox", Entity.class);
++                if (!this.getClass().getMethod("getCollideBox").equals(getHardCollisionBoxMethod)) {
+                     hardCollides = Boolean.TRUE;
+-                } else if (!this.getClass().getMethod("j", Entity.class).equals(getHardCollisionBoxEntityMethod)) {
++                } else if (!this.getClass().getMethod("getCollideAgainstBox", Entity.class).equals(getHardCollisionBoxEntityMethod)) {
+                     hardCollides = Boolean.TRUE;
+                 } else {
+                     hardCollides = Boolean.FALSE;
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 index 002ce01ffd204a8fb65cf4c641609ee3809ad95b..f925961ce4e96a301191019c86bf6cc9ceb3edc3 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
@@ -1101,6 +1130,19 @@ index 51aaaa44e0e4445812e7545648ea5839aa524406..968db1ab1fd6cf662d78a2adeb7b2724
              if (com.destroystokyo.paper.PaperConfig.useAlternativeLuckFormula) {
                  // Random boost to avoid losing precision in the final int cast on return
                  final int weightBoost = 100;
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index 93340e9470b23f2d8c91338e63e95c6465e69c3c..2121bf3f213b0e7d97acfdad508cf9082e7bc3ac 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -214,7 +214,7 @@ public class Main {
+                 }
+ 
+                 if (Main.class.getPackage().getImplementationVendor() != null && System.getProperty("IReallyKnowWhatIAmDoingISwear") == null) {
+-                    Date buildDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(Main.class.getPackage().getImplementationVendor()); // Paper
++                    Date buildDate = new SimpleDateFormat("yyyyMMdd-HHmm").parse(Main.class.getPackage().getImplementationVendor()); // Paper
+ 
+                     Calendar deadline = Calendar.getInstance();
+                     deadline.add(Calendar.DAY_OF_YEAR, -21);
 diff --git a/src/main/resources/configurations/bukkit.yml b/src/main/resources/configurations/bukkit.yml
 new file mode 100644
 index 0000000000000000000000000000000000000000..e9cee1713ef7b7be3347e5bf3ecf4261e843ad3c
