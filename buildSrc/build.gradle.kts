@@ -26,9 +26,6 @@ dependencies {
     implementation("org.cadixdev:lorenz-io-proguard:$lorenzVersion")
     implementation("org.cadixdev:atlas:$atlasVersion")
     implementation("org.cadixdev:bombe:$bombeVersion")
-    // implementation("org.ow2.asm:asm:$asmVersion")
-    // implementation("org.ow2.asm:asm-commons:$asmVersion")
-    // implementation("org.ow2.asm:asm-tree:$asmVersion")
 }
 
 gradlePlugin {
