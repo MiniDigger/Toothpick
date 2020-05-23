@@ -25,6 +25,27 @@ This uses gradle. Interesting Tasks:
 
 You can run those in both windows and linux env, but you shouldn't fix and match (so once you ran `setupUpstream` in WSL you can't run it again in windows until you run `cleanUp`)
 
+### Steps for building
+
+    Pre-requirements
+    - JDK-1.8
+    - JDK-11+
+    - Maven (and Gradle)
+    - setup JAVA_HOME
+
+1. `git clone https://github.com/CadixDev/Atlas` (could require JDK-1.8 for compiling)
+2. `cd Atlas && ./gradlew build install`
+3. `git clone https://github.com/CadixDev/Lorenz/` (could require JDK-1.8 for compiling)
+4. `git checkout fix/mercury-14`
+5. `cd Mercury/ && ./gradlew build install`
+6. After building the dependencies `git clone https://github.com/yannicklamprecht/Toothpick` (requires JDK-11+ for compiling)
+7. run (under Windows use `./gradle.bat` instead of `./gralew` 
+    1. `./gradlew setupUpstream`
+    2. `./gradlew mojangMappings`
+    3. `./gradlew applyPatches`
+    4. `./gradlew shadowJar`
+
+
 ## License
 
 MIT
