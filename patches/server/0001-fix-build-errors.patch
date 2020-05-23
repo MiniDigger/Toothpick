@@ -1,80 +1,464 @@
-From 87514ad28365dfe24ae59b2d20100fef17d8b53e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: ysl3000 <yannicklamprecht@live.de>
-Date: Sat, 23 May 2020 14:21:22 +0200
+Date: Sat, 23 May 2020 18:20:28 +0200
 Subject: [PATCH] fix-build-errors
 
----
- .../core/dispenser/DispenseItemBehavior.java  | 17 +++---
- src/main/java/net/minecraft/server/EULA.java  |  8 +--
- .../minecraft/server/level/ServerLevel.java   |  2 +-
- .../network/ServerGamePacketListenerImpl.java |  2 +-
- .../server/players/GameProfileCache.java      |  2 +-
- .../minecraft/server/players/PlayerList.java  |  2 +-
- .../net/minecraft/world/entity/Entity.java    |  8 +--
- .../minecraft/world/entity/LivingEntity.java  |  7 +--
- .../world/entity/animal/SnowGolem.java        |  5 ++
- .../world/entity/animal/horse/Llama.java      |  5 ++
- .../world/entity/boss/wither/WitherBoss.java  |  5 ++
- .../world/entity/decoration/ArmorStand.java   |  5 +-
- .../world/entity/monster/Drowned.java         |  5 ++
- .../world/entity/monster/Illusioner.java      |  5 ++
- .../world/entity/monster/Pillager.java        |  5 ++
- .../minecraft/world/entity/monster/Slime.java | 11 ++--
- .../minecraft/world/entity/monster/Witch.java |  8 ++-
- .../world/entity/monster/WitherSkeleton.java  |  5 ++
- .../world/entity/monster/Zombie.java          |  3 +-
- .../world/entity/monster/ZombieVillager.java  |  3 +-
- .../world/entity/npc/AbstractVillager.java    |  3 +-
- .../minecraft/world/entity/npc/Villager.java  | 37 +++++--------
- .../world/entity/npc/WanderingTrader.java     |  5 ++
- .../minecraft/world/entity/player/Player.java | 13 ++---
- .../saveddata/maps/MapItemSavedData.java      |  2 +-
- .../entries/LootPoolSingletonContainer.java   |  2 +-
- src/main/resources/configurations/bukkit.yml  | 39 +++++++++++++
- .../resources/configurations/commands.yml     | 17 ++++++
- src/main/resources/configurations/help.yml    | 55 +++++++++++++++++++
- .../resources/log4j2.component.properties     |  3 +
- src/main/resources/log4j2.xml                 | 43 +++++++++++++++
- 31 files changed, 258 insertions(+), 74 deletions(-)
- create mode 100644 src/main/resources/configurations/bukkit.yml
- create mode 100644 src/main/resources/configurations/commands.yml
- create mode 100644 src/main/resources/configurations/help.yml
- create mode 100644 src/main/resources/log4j2.component.properties
- create mode 100644 src/main/resources/log4j2.xml
 
 diff --git a/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java b/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java
-index fd74305dc..f366a548b 100644
+index fd74305dcd35e047be12ee1fc0b5edd617395c14..f3c21e83be063656c076702bd97a94e080b4764e 100644
 --- a/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java
 +++ b/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java
-@@ -349,7 +349,7 @@ public interface DispenseItemBehavior {
-         }));
-         DispenserBlock.registerBehavior((ItemLike) Items.FIRE_CHARGE, (DispenseItemBehavior) (new DefaultDispenseItemBehavior() {
+@@ -90,7 +90,7 @@ public interface DispenseItemBehavior {
+     ItemStack dispense(BlockSource isourceblock, ItemStack itemstack);
+ 
+     static void bootStrap() {
+-        DispenserBlock.registerBehavior((ItemLike) Items.ARROW, (DispenseItemBehavior) (new AbstractProjectileDispenseBehavior() {
++        DispenserBlock.registerBehavior(Items.ARROW, new AbstractProjectileDispenseBehavior() {
+             @Override
+             protected Projectile getProjectile(Level world, Position iposition, ItemStack itemstack) {
+                 Arrow entitytippedarrow = new Arrow(world, iposition.x(), iposition.y(), iposition.z());
+@@ -98,8 +98,8 @@ public interface DispenseItemBehavior {
+                 entitytippedarrow.pickup = AbstractArrow.Pickup.ALLOWED;
+                 return entitytippedarrow;
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.TIPPED_ARROW, (DispenseItemBehavior) (new AbstractProjectileDispenseBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.TIPPED_ARROW, new AbstractProjectileDispenseBehavior() {
+             @Override
+             protected Projectile getProjectile(Level world, Position iposition, ItemStack itemstack) {
+                 Arrow entitytippedarrow = new Arrow(world, iposition.x(), iposition.y(), iposition.z());
+@@ -108,8 +108,8 @@ public interface DispenseItemBehavior {
+                 entitytippedarrow.pickup = AbstractArrow.Pickup.ALLOWED;
+                 return entitytippedarrow;
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.SPECTRAL_ARROW, (DispenseItemBehavior) (new AbstractProjectileDispenseBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.SPECTRAL_ARROW, new AbstractProjectileDispenseBehavior() {
+             @Override
+             protected Projectile getProjectile(Level world, Position iposition, ItemStack itemstack) {
+                 SpectralArrow entityspectralarrow = new SpectralArrow(world, iposition.x(), iposition.y(), iposition.z());
+@@ -117,27 +117,27 @@ public interface DispenseItemBehavior {
+                 entityspectralarrow.pickup = AbstractArrow.Pickup.ALLOWED;
+                 return entityspectralarrow;
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.EGG, (DispenseItemBehavior) (new AbstractProjectileDispenseBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.EGG, new AbstractProjectileDispenseBehavior() {
+             @Override
+             protected Projectile getProjectile(Level world, Position iposition, ItemStack itemstack) {
+-                return (Projectile) Util.make((new ThrownEgg(world, iposition.x(), iposition.y(), iposition.z())), (entityegg) -> { // CraftBukkit - decompile error
++                return Util.make((new ThrownEgg(world, iposition.x(), iposition.y(), iposition.z())), (entityegg) -> { // CraftBukkit - decompile error
+                     entityegg.setItem(itemstack);
+                 });
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.SNOWBALL, (DispenseItemBehavior) (new AbstractProjectileDispenseBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.SNOWBALL, new AbstractProjectileDispenseBehavior() {
+             @Override
+             protected Projectile getProjectile(Level world, Position iposition, ItemStack itemstack) {
+-                return (Projectile) Util.make((new Snowball(world, iposition.x(), iposition.y(), iposition.z())), (entitysnowball) -> { // CraftBukkit - decompile error
++                return Util.make((new Snowball(world, iposition.x(), iposition.y(), iposition.z())), (entitysnowball) -> { // CraftBukkit - decompile error
+                     entitysnowball.setItem(itemstack);
+                 });
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.EXPERIENCE_BOTTLE, (DispenseItemBehavior) (new AbstractProjectileDispenseBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.EXPERIENCE_BOTTLE, new AbstractProjectileDispenseBehavior() {
+             @Override
+             protected Projectile getProjectile(Level world, Position iposition, ItemStack itemstack) {
+-                return (Projectile) Util.make((new ThrownExperienceBottle(world, iposition.x(), iposition.y(), iposition.z())), (entitythrownexpbottle) -> { // CraftBukkit - decompile error
++                return Util.make((new ThrownExperienceBottle(world, iposition.x(), iposition.y(), iposition.z())), (entitythrownexpbottle) -> { // CraftBukkit - decompile error
+                     entitythrownexpbottle.setItem(itemstack);
+                 });
+             }
+@@ -151,14 +151,14 @@ public interface DispenseItemBehavior {
+             protected float getPower() {
+                 return super.getPower() * 1.25F;
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.SPLASH_POTION, new DispenseItemBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.SPLASH_POTION, new DispenseItemBehavior() {
+             @Override
+             public ItemStack dispense(BlockSource isourceblock, ItemStack itemstack) {
+                 return (new AbstractProjectileDispenseBehavior() {
+                     @Override
+                     protected Projectile getProjectile(Level world, Position iposition, ItemStack itemstack1) {
+-                        return (Projectile) Util.make((new ThrownPotion(world, iposition.x(), iposition.y(), iposition.z())), (entitypotion) -> { // CraftBukkit - decompile error
++                        return Util.make((new ThrownPotion(world, iposition.x(), iposition.y(), iposition.z())), (entitypotion) -> { // CraftBukkit - decompile error
+                             entitypotion.setItem(itemstack1);
+                         });
+                     }
+@@ -175,13 +175,13 @@ public interface DispenseItemBehavior {
+                 }).dispense(isourceblock, itemstack);
+             }
+         });
+-        DispenserBlock.registerBehavior((ItemLike) Items.LINGERING_POTION, new DispenseItemBehavior() {
++        DispenserBlock.registerBehavior(Items.LINGERING_POTION, new DispenseItemBehavior() {
+             @Override
+             public ItemStack dispense(BlockSource isourceblock, ItemStack itemstack) {
+                 return (new AbstractProjectileDispenseBehavior() {
+                     @Override
+                     protected Projectile getProjectile(Level world, Position iposition, ItemStack itemstack1) {
+-                        return (Projectile) Util.make((new ThrownPotion(world, iposition.x(), iposition.y(), iposition.z())), (entitypotion) -> { // CraftBukkit - decompile error
++                        return Util.make((new ThrownPotion(world, iposition.x(), iposition.y(), iposition.z())), (entitypotion) -> { // CraftBukkit - decompile error
+                             entitypotion.setItem(itemstack1);
+                         });
+                     }
+@@ -201,7 +201,7 @@ public interface DispenseItemBehavior {
+         DefaultDispenseItemBehavior dispensebehavioritem = new DefaultDispenseItemBehavior() {
+             @Override
+             public ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
+-                Direction enumdirection = (Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING);
++                Direction enumdirection = isourceblock.getBlockState().getValue(DispenserBlock.FACING);
+                 EntityType<?> entitytypes = ((SpawnEggItem) itemstack.getItem()).getType(itemstack.getTag());
+ 
+                 // CraftBukkit start
+@@ -224,7 +224,7 @@ public interface DispenseItemBehavior {
+                     itemstack.grow(1);
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -232,7 +232,7 @@ public interface DispenseItemBehavior {
+                 }
+ 
+                 try { // Paper
+-                entitytypes.spawn(isourceblock.getLevel(), itemstack, (Player) null, isourceblock.getPos().relative(enumdirection), MobSpawnType.DISPENSER, enumdirection != Direction.UP, false);
++                entitytypes.spawn(isourceblock.getLevel(), itemstack, null, isourceblock.getPos().relative(enumdirection), MobSpawnType.DISPENSER, enumdirection != Direction.UP, false);
+                     // Paper start
+                 } catch (Exception ex){
+                     MinecraftServer.LOGGER.warn("An exception occurred dispensing entity at {}[{}]", world.getWorld().getName(), isourceblock.getPos(), ex);
+@@ -249,13 +249,13 @@ public interface DispenseItemBehavior {
+         while (iterator.hasNext()) {
+             SpawnEggItem itemmonsteregg = (SpawnEggItem) iterator.next();
+ 
+-            DispenserBlock.registerBehavior((ItemLike) itemmonsteregg, (DispenseItemBehavior) dispensebehavioritem);
++            DispenserBlock.registerBehavior(itemmonsteregg, dispensebehavioritem);
+         }
+ 
+-        DispenserBlock.registerBehavior((ItemLike) Items.ARMOR_STAND, (DispenseItemBehavior) (new DefaultDispenseItemBehavior() {
++        DispenserBlock.registerBehavior(Items.ARMOR_STAND, new DefaultDispenseItemBehavior() {
+             @Override
+             public ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
+-                Direction enumdirection = (Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING);
++                Direction enumdirection = isourceblock.getBlockState().getValue(DispenserBlock.FACING);
+                 BlockPos blockposition = isourceblock.getPos().relative(enumdirection);
+                 Level world = isourceblock.getLevel();
+ 
+@@ -278,7 +278,7 @@ public interface DispenseItemBehavior {
+                     itemstack.grow(1);
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -286,24 +286,24 @@ public interface DispenseItemBehavior {
+                 }
+                 // CraftBukkit end
+ 
+-                ArmorStand entityarmorstand = new ArmorStand(world, (double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D);
++                ArmorStand entityarmorstand = new ArmorStand(world, (double) blockposition.getX() + 0.5D, blockposition.getY(), (double) blockposition.getZ() + 0.5D);
+ 
+-                EntityType.updateCustomEntityTag(world, (Player) null, (Entity) entityarmorstand, itemstack.getTag());
++                EntityType.updateCustomEntityTag(world, null, entityarmorstand, itemstack.getTag());
+                 entityarmorstand.yRot = enumdirection.toYRot();
+                 world.addFreshEntity(entityarmorstand);
+                 // itemstack.subtract(1); // CraftBukkit - Handled during event processing
+                 return itemstack;
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.FIREWORK_ROCKET, (DispenseItemBehavior) (new DefaultDispenseItemBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.FIREWORK_ROCKET, new DefaultDispenseItemBehavior() {
+             @Override
+             public ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
+-                Direction enumdirection = (Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING);
+-                double d0 = (double) enumdirection.getStepX();
+-                double d1 = (double) enumdirection.getStepY();
+-                double d2 = (double) enumdirection.getStepZ();
++                Direction enumdirection = isourceblock.getBlockState().getValue(DispenserBlock.FACING);
++                double d0 = enumdirection.getStepX();
++                double d1 = enumdirection.getStepY();
++                double d2 = enumdirection.getStepZ();
+                 double d3 = isourceblock.x() + d0;
+-                double d4 = (double) ((float) isourceblock.getPos().getY() + 0.2F);
++                double d4 = (float) isourceblock.getPos().getY() + 0.2F;
+                 double d5 = isourceblock.z() + d2;
+                 // CraftBukkit start
+                 Level world = isourceblock.getLevel();
+@@ -325,7 +325,7 @@ public interface DispenseItemBehavior {
+                     itemstack.grow(1);
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -346,11 +346,11 @@ public interface DispenseItemBehavior {
+             protected void playSound(BlockSource isourceblock) {
+                 isourceblock.getLevel().levelEvent(1004, isourceblock.getPos(), 0);
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.FIRE_CHARGE, (DispenseItemBehavior) (new DefaultDispenseItemBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.FIRE_CHARGE, new DefaultDispenseItemBehavior() {
              @Override
 -            public ItemStack lambda$static$0(BlockSource isourceblock, ItemStack itemstack) {
+-                Direction enumdirection = (Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING);
 +            public ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
-                 Direction enumdirection = (Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING);
++                Direction enumdirection = isourceblock.getBlockState().getValue(DispenserBlock.FACING);
                  Position iposition = DispenserBlock.getDispensePosition(isourceblock);
                  double d0 = iposition.x() + (double) ((float) enumdirection.getStepX() * 0.3F);
-@@ -592,7 +592,7 @@ public interface DispenseItemBehavior {
-         }));
-         DispenserBlock.registerBehavior((ItemLike) Items.BONE_MEAL, (DispenseItemBehavior) (new OptionalDispenseItemBehavior() {
+                 double d1 = iposition.y() + (double) ((float) enumdirection.getStepY() * 0.3F);
+@@ -380,7 +380,7 @@ public interface DispenseItemBehavior {
+                     itemstack.grow(1);
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -389,7 +389,7 @@ public interface DispenseItemBehavior {
+ 
+                 SmallFireball entitysmallfireball = new SmallFireball(world, d0, d1, d2, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
+                 entitysmallfireball.setItem(itemstack1);
+-                entitysmallfireball.projectileSource = new org.bukkit.craftbukkit.projectiles.CraftBlockProjectileSource((DispenserBlockEntity) isourceblock.getEntity());
++                entitysmallfireball.projectileSource = new org.bukkit.craftbukkit.projectiles.CraftBlockProjectileSource(isourceblock.getEntity());
+ 
+                 world.addFreshEntity(entitysmallfireball);
+                 // itemstack.subtract(1); // Handled during event processing
+@@ -401,20 +401,20 @@ public interface DispenseItemBehavior {
+             protected void playSound(BlockSource isourceblock) {
+                 isourceblock.getLevel().levelEvent(1018, isourceblock.getPos(), 0);
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.OAK_BOAT, (DispenseItemBehavior) (new BoatDispenseItemBehavior(Boat.Type.OAK)));
+-        DispenserBlock.registerBehavior((ItemLike) Items.SPRUCE_BOAT, (DispenseItemBehavior) (new BoatDispenseItemBehavior(Boat.Type.SPRUCE)));
+-        DispenserBlock.registerBehavior((ItemLike) Items.BIRCH_BOAT, (DispenseItemBehavior) (new BoatDispenseItemBehavior(Boat.Type.BIRCH)));
+-        DispenserBlock.registerBehavior((ItemLike) Items.JUNGLE_BOAT, (DispenseItemBehavior) (new BoatDispenseItemBehavior(Boat.Type.JUNGLE)));
+-        DispenserBlock.registerBehavior((ItemLike) Items.DARK_OAK_BOAT, (DispenseItemBehavior) (new BoatDispenseItemBehavior(Boat.Type.DARK_OAK)));
+-        DispenserBlock.registerBehavior((ItemLike) Items.ACACIA_BOAT, (DispenseItemBehavior) (new BoatDispenseItemBehavior(Boat.Type.ACACIA)));
++        });
++        DispenserBlock.registerBehavior(Items.OAK_BOAT, new BoatDispenseItemBehavior(Boat.Type.OAK));
++        DispenserBlock.registerBehavior(Items.SPRUCE_BOAT, new BoatDispenseItemBehavior(Boat.Type.SPRUCE));
++        DispenserBlock.registerBehavior(Items.BIRCH_BOAT, new BoatDispenseItemBehavior(Boat.Type.BIRCH));
++        DispenserBlock.registerBehavior(Items.JUNGLE_BOAT, new BoatDispenseItemBehavior(Boat.Type.JUNGLE));
++        DispenserBlock.registerBehavior(Items.DARK_OAK_BOAT, new BoatDispenseItemBehavior(Boat.Type.DARK_OAK));
++        DispenserBlock.registerBehavior(Items.ACACIA_BOAT, new BoatDispenseItemBehavior(Boat.Type.ACACIA));
+         DefaultDispenseItemBehavior dispensebehavioritem1 = new DefaultDispenseItemBehavior() {
+             private final DefaultDispenseItemBehavior b = new DefaultDispenseItemBehavior();
+ 
+             @Override
+             public ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
+                 BucketItem itembucket = (BucketItem) itemstack.getItem();
+-                BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
++                BlockPos blockposition = isourceblock.getPos().relative(isourceblock.getBlockState().getValue(DispenserBlock.FACING));
+                 Level world = isourceblock.getLevel();
+ 
+                 // CraftBukkit start
+@@ -439,7 +439,7 @@ public interface DispenseItemBehavior {
+                     if (!event.getItem().equals(craftItem)) {
+                         // Chain to handler for new item
+                         ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                        DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                        DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                         if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                             idispensebehavior.dispense(isourceblock, eventStack);
+                             return itemstack;
+@@ -450,7 +450,7 @@ public interface DispenseItemBehavior {
+                 }
+                 // CraftBukkit end
+ 
+-                if (itembucket.emptyBucket((Player) null, world, blockposition, (BlockHitResult) null)) {
++                if (itembucket.emptyBucket(null, world, blockposition, null)) {
+                     itembucket.checkExtraContent(world, itemstack, blockposition);
+                     // CraftBukkit start - Handle stacked buckets
+                     Item item = Items.BUCKET;
+@@ -469,19 +469,19 @@ public interface DispenseItemBehavior {
+             }
+         };
+ 
+-        DispenserBlock.registerBehavior((ItemLike) Items.LAVA_BUCKET, (DispenseItemBehavior) dispensebehavioritem1);
+-        DispenserBlock.registerBehavior((ItemLike) Items.WATER_BUCKET, (DispenseItemBehavior) dispensebehavioritem1);
+-        DispenserBlock.registerBehavior((ItemLike) Items.SALMON_BUCKET, (DispenseItemBehavior) dispensebehavioritem1);
+-        DispenserBlock.registerBehavior((ItemLike) Items.COD_BUCKET, (DispenseItemBehavior) dispensebehavioritem1);
+-        DispenserBlock.registerBehavior((ItemLike) Items.PUFFERFISH_BUCKET, (DispenseItemBehavior) dispensebehavioritem1);
+-        DispenserBlock.registerBehavior((ItemLike) Items.TROPICAL_FISH_BUCKET, (DispenseItemBehavior) dispensebehavioritem1);
+-        DispenserBlock.registerBehavior((ItemLike) Items.BUCKET, (DispenseItemBehavior) (new DefaultDispenseItemBehavior() {
++        DispenserBlock.registerBehavior(Items.LAVA_BUCKET, dispensebehavioritem1);
++        DispenserBlock.registerBehavior(Items.WATER_BUCKET, dispensebehavioritem1);
++        DispenserBlock.registerBehavior(Items.SALMON_BUCKET, dispensebehavioritem1);
++        DispenserBlock.registerBehavior(Items.COD_BUCKET, dispensebehavioritem1);
++        DispenserBlock.registerBehavior(Items.PUFFERFISH_BUCKET, dispensebehavioritem1);
++        DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, dispensebehavioritem1);
++        DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
+             private final DefaultDispenseItemBehavior b = new DefaultDispenseItemBehavior();
+ 
+             @Override
+             public ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
+                 Level world = isourceblock.getLevel();
+-                BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
++                BlockPos blockposition = isourceblock.getPos().relative(isourceblock.getBlockState().getValue(DispenserBlock.FACING));
+                 BlockState iblockdata = world.getBlockState(blockposition);
+                 Block block = iblockdata.getBlock();
+ 
+@@ -509,7 +509,7 @@ public interface DispenseItemBehavior {
+                         if (!event.getItem().equals(craftItem)) {
+                             // Chain to handler for new item
+                             ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                            DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                            DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                             if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                                 idispensebehavior.dispense(isourceblock, eventStack);
+                                 return itemstack;
+@@ -534,8 +534,8 @@ public interface DispenseItemBehavior {
+                     return super.execute(isourceblock, itemstack);
+                 }
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.FLINT_AND_STEEL, (DispenseItemBehavior) (new OptionalDispenseItemBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.FLINT_AND_STEEL, new OptionalDispenseItemBehavior() {
+             @Override
+             protected ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
+                 Level world = isourceblock.getLevel();
+@@ -556,7 +556,7 @@ public interface DispenseItemBehavior {
+                 if (!event.getItem().equals(craftItem)) {
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -565,17 +565,17 @@ public interface DispenseItemBehavior {
+                 // CraftBukkit end
+ 
+                 this.success = true;
+-                BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
++                BlockPos blockposition = isourceblock.getPos().relative(isourceblock.getBlockState().getValue(DispenserBlock.FACING));
+                 BlockState iblockdata = world.getBlockState(blockposition);
+ 
+-                if (FlintAndSteelItem.canUse(iblockdata, (LevelAccessor) world, blockposition)) {
++                if (FlintAndSteelItem.canUse(iblockdata, world, blockposition)) {
+                     // CraftBukkit start - Ignition by dispensing flint and steel
+-                    if (!org.bukkit.craftbukkit.event.CraftEventFactory.callBlockIgniteEvent(world, blockposition, isourceblock.getPos()).isCancelled()) {
++                    if (!CraftEventFactory.callBlockIgniteEvent(world, blockposition, isourceblock.getPos()).isCancelled()) {
+                         world.setBlockAndUpdate(blockposition, Blocks.FIRE.defaultBlockState());
+                     }
+                     // CraftBukkit end
+                 } else if (FlintAndSteelItem.canLightCampFire(iblockdata)) {
+-                    world.setBlockAndUpdate(blockposition, (BlockState) iblockdata.setValue(BlockStateProperties.LIT, true));
++                    world.setBlockAndUpdate(blockposition, iblockdata.setValue(BlockStateProperties.LIT, true));
+                 } else if (iblockdata.getBlock() instanceof TntBlock) {
+                     TntBlock.explode(world, blockposition);
+                     world.removeBlock(blockposition, false);
+@@ -583,19 +583,19 @@ public interface DispenseItemBehavior {
+                     this.success = false;
+                 }
+ 
+-                if (this.success && itemstack.hurt(1, world.random, (ServerPlayer) null)) {
++                if (this.success && itemstack.hurt(1, world.random, null)) {
+                     itemstack.setCount(0);
+                 }
+ 
+                 return itemstack;
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.BONE_MEAL, (DispenseItemBehavior) (new OptionalDispenseItemBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.BONE_MEAL, new OptionalDispenseItemBehavior() {
              @Override
 -            protected ItemStack lambda$static$0(BlockSource isourceblock, ItemStack itemstack) {
 +            protected ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
                  this.success = true;
                  Level world = isourceblock.getLevel();
-                 BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
-@@ -653,7 +653,7 @@ public interface DispenseItemBehavior {
-         }));
-         DispenserBlock.registerBehavior((ItemLike) Blocks.TNT, (DispenseItemBehavior) (new DefaultDispenseItemBehavior() {
+-                BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
++                BlockPos blockposition = isourceblock.getPos().relative(isourceblock.getBlockState().getValue(DispenserBlock.FACING));
+                 // CraftBukkit start
+                 org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getPos().getX(), isourceblock.getPos().getY(), isourceblock.getPos().getZ());
+                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
+@@ -612,7 +612,7 @@ public interface DispenseItemBehavior {
+                 if (!event.getItem().equals(craftItem)) {
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -622,7 +622,7 @@ public interface DispenseItemBehavior {
+                 world.captureTreeGeneration = true;
+                 // CraftBukkit end
+ 
+-                if (!BoneMealItem.growCrop(itemstack, world, blockposition) && !BoneMealItem.growWaterPlant(itemstack, world, blockposition, (Direction) null)) {
++                if (!BoneMealItem.growCrop(itemstack, world, blockposition) && !BoneMealItem.growWaterPlant(itemstack, world, blockposition, null)) {
+                     this.success = false;
+                 } else if (!world.isClientSide) {
+                     world.levelEvent(2005, blockposition, 0);
+@@ -650,12 +650,12 @@ public interface DispenseItemBehavior {
+ 
+                 return itemstack;
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Blocks.TNT, (DispenseItemBehavior) (new DefaultDispenseItemBehavior() {
++        });
++        DispenserBlock.registerBehavior(Blocks.TNT, new DefaultDispenseItemBehavior() {
              @Override
 -            protected ItemStack lambda$static$0(BlockSource isourceblock, ItemStack itemstack) {
 +            protected ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
                  Level world = isourceblock.getLevel();
-                 BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
+-                BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
++                BlockPos blockposition = isourceblock.getPos().relative(isourceblock.getBlockState().getValue(DispenserBlock.FACING));
                  // EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(world, (double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D, (EntityLiving) null);
-@@ -695,7 +695,7 @@ public interface DispenseItemBehavior {
-         }));
+ 
+                 // CraftBukkit start
+@@ -663,7 +663,7 @@ public interface DispenseItemBehavior {
+                 org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getPos().getX(), isourceblock.getPos().getY(), isourceblock.getPos().getZ());
+                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
+ 
+-                BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector((double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D));
++                BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector((double) blockposition.getX() + 0.5D, blockposition.getY(), (double) blockposition.getZ() + 0.5D));
+                 if (!DispenserBlock.eventFired) {
+                    world.getServerOH().getPluginManager().callEvent(event);
+                 }
+@@ -677,40 +677,40 @@ public interface DispenseItemBehavior {
+                     itemstack.grow(1);
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+                     }
+                 }
+ 
+-                PrimedTnt entitytntprimed = new PrimedTnt(world, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), (LivingEntity) null);
++                PrimedTnt entitytntprimed = new PrimedTnt(world, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), null);
+                 // CraftBukkit end
+ 
+                 world.addFreshEntity(entitytntprimed);
+-                world.playSound((Player) null, entitytntprimed.getX(), entitytntprimed.getY(), entitytntprimed.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
++                world.playSound(null, entitytntprimed.getX(), entitytntprimed.getY(), entitytntprimed.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+                 // itemstack.subtract(1); // CraftBukkit - handled above
+                 return itemstack;
+             }
+-        }));
++        });
          OptionalDispenseItemBehavior dispensebehaviormaybe = new OptionalDispenseItemBehavior() {
              @Override
 -            protected ItemStack lambda$static$0(BlockSource isourceblock, ItemStack itemstack) {
@@ -82,46 +466,205 @@ index fd74305dc..f366a548b 100644
                  this.success = ArmorItem.dispenseArmor(isourceblock, itemstack);
                  return itemstack;
              }
-@@ -708,7 +708,7 @@ public interface DispenseItemBehavior {
-         DispenserBlock.registerBehavior((ItemLike) Items.PLAYER_HEAD, (DispenseItemBehavior) dispensebehaviormaybe);
-         DispenserBlock.registerBehavior((ItemLike) Items.WITHER_SKELETON_SKULL, (DispenseItemBehavior) (new OptionalDispenseItemBehavior() {
+         };
+ 
+-        DispenserBlock.registerBehavior((ItemLike) Items.CREEPER_HEAD, (DispenseItemBehavior) dispensebehaviormaybe);
+-        DispenserBlock.registerBehavior((ItemLike) Items.ZOMBIE_HEAD, (DispenseItemBehavior) dispensebehaviormaybe);
+-        DispenserBlock.registerBehavior((ItemLike) Items.DRAGON_HEAD, (DispenseItemBehavior) dispensebehaviormaybe);
+-        DispenserBlock.registerBehavior((ItemLike) Items.SKELETON_SKULL, (DispenseItemBehavior) dispensebehaviormaybe);
+-        DispenserBlock.registerBehavior((ItemLike) Items.PLAYER_HEAD, (DispenseItemBehavior) dispensebehaviormaybe);
+-        DispenserBlock.registerBehavior((ItemLike) Items.WITHER_SKELETON_SKULL, (DispenseItemBehavior) (new OptionalDispenseItemBehavior() {
++        DispenserBlock.registerBehavior(Items.CREEPER_HEAD, dispensebehaviormaybe);
++        DispenserBlock.registerBehavior(Items.ZOMBIE_HEAD, dispensebehaviormaybe);
++        DispenserBlock.registerBehavior(Items.DRAGON_HEAD, dispensebehaviormaybe);
++        DispenserBlock.registerBehavior(Items.SKELETON_SKULL, dispensebehaviormaybe);
++        DispenserBlock.registerBehavior(Items.PLAYER_HEAD, dispensebehaviormaybe);
++        DispenserBlock.registerBehavior(Items.WITHER_SKELETON_SKULL, new OptionalDispenseItemBehavior() {
              @Override
 -            protected ItemStack lambda$static$0(BlockSource isourceblock, ItemStack itemstack) {
 +            protected ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
                  Level world = isourceblock.getLevel();
-                 Direction enumdirection = (Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING);
+-                Direction enumdirection = (Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING);
++                Direction enumdirection = isourceblock.getBlockState().getValue(DispenserBlock.FACING);
                  BlockPos blockposition = isourceblock.getPos().relative(enumdirection);
-@@ -754,9 +754,9 @@ public interface DispenseItemBehavior {
+ 
+                 // CraftBukkit start
+@@ -729,7 +729,7 @@ public interface DispenseItemBehavior {
+                 if (!event.getItem().equals(craftItem)) {
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -738,7 +738,7 @@ public interface DispenseItemBehavior {
+                 // CraftBukkit end
+ 
+                 if (world.isEmptyBlock(blockposition) && WitherSkullBlock.canSpawnMob(world, blockposition, itemstack)) {
+-                    world.setBlock(blockposition, (BlockState) Blocks.WITHER_SKELETON_SKULL.defaultBlockState().setValue(SkullBlock.ROTATION, enumdirection.getAxis() == Direction.Axis.Y ? 0 : enumdirection.getOpposite().get2DDataValue() * 4), 3);
++                    world.setBlock(blockposition, Blocks.WITHER_SKELETON_SKULL.defaultBlockState().setValue(SkullBlock.ROTATION, enumdirection.getAxis() == Direction.Axis.Y ? 0 : enumdirection.getOpposite().get2DDataValue() * 4), 3);
+                     BlockEntity tileentity = world.getBlockEntity(blockposition);
+ 
+                     if (tileentity instanceof SkullBlockEntity) {
+@@ -753,12 +753,12 @@ public interface DispenseItemBehavior {
+ 
                  return itemstack;
              }
-         }));
+-        }));
 -        DispenserBlock.registerBehavior((ItemLike) Blocks.CARVED_PUMPKIN, (DispenseItemBehavior) (new OptionalDispenseItemBehavior() {
++        });
 +        DispenserBlock.registerBehavior(Blocks.CARVED_PUMPKIN, new OptionalDispenseItemBehavior() {
              @Override
 -            protected ItemStack lambda$static$0(BlockSource isourceblock, ItemStack itemstack) {
 +            protected ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
                  Level world = isourceblock.getLevel();
-                 BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
+-                BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
++                BlockPos blockposition = isourceblock.getPos().relative(isourceblock.getBlockState().getValue(DispenserBlock.FACING));
                  CarvedPumpkinBlock blockpumpkincarved = (CarvedPumpkinBlock) Blocks.CARVED_PUMPKIN;
-@@ -798,7 +798,7 @@ public interface DispenseItemBehavior {
+ 
+                 // CraftBukkit start
+@@ -777,7 +777,7 @@ public interface DispenseItemBehavior {
+                 if (!event.getItem().equals(craftItem)) {
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -785,7 +785,7 @@ public interface DispenseItemBehavior {
+                 }
+                 // CraftBukkit end
+ 
+-                if (world.isEmptyBlock(blockposition) && blockpumpkincarved.canSpawnGolem((LevelReader) world, blockposition)) {
++                if (world.isEmptyBlock(blockposition) && blockpumpkincarved.canSpawnGolem(world, blockposition)) {
+                     if (!world.isClientSide) {
+                         world.setBlock(blockposition, blockpumpkincarved.defaultBlockState(), 3);
+                     }
+@@ -798,18 +798,18 @@ public interface DispenseItemBehavior {
+ 
+                 return itemstack;
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Blocks.SHULKER_BOX.asItem(), (DispenseItemBehavior) (new ShulkerBoxDispenseBehavior()));
++        });
++        DispenserBlock.registerBehavior(Blocks.SHULKER_BOX.asItem(), new ShulkerBoxDispenseBehavior());
+         DyeColor[] aenumcolor = DyeColor.values();
+         int i = aenumcolor.length;
+ 
+         for (int j = 0; j < i; ++j) {
+             DyeColor enumcolor = aenumcolor[j];
+ 
+-            DispenserBlock.registerBehavior((ItemLike) ShulkerBoxBlock.getBlockByColor(enumcolor).asItem(), (DispenseItemBehavior) (new ShulkerBoxDispenseBehavior()));
++            DispenserBlock.registerBehavior(ShulkerBoxBlock.getBlockByColor(enumcolor).asItem(), new ShulkerBoxDispenseBehavior());
+         }
+ 
+-        DispenserBlock.registerBehavior((ItemLike) Items.GLASS_BOTTLE.asItem(), (DispenseItemBehavior) (new OptionalDispenseItemBehavior() {
++        DispenserBlock.registerBehavior(Items.GLASS_BOTTLE.asItem(), new OptionalDispenseItemBehavior() {
+             private final DefaultDispenseItemBehavior c = new DefaultDispenseItemBehavior();
+ 
+             private ItemStack a(BlockSource isourceblock, ItemStack itemstack, ItemStack itemstack1) {
+@@ -826,10 +826,10 @@ public interface DispenseItemBehavior {
+             }
+ 
+             @Override
+-            public ItemStack lambda$static$0(BlockSource isourceblock, ItemStack itemstack) {
++            public ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
+                 this.success = false;
+                 Level world = isourceblock.getLevel();
+-                BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
++                BlockPos blockposition = isourceblock.getPos().relative(isourceblock.getBlockState().getValue(DispenserBlock.FACING));
+                 BlockState iblockdata = world.getBlockState(blockposition);
+                 Block block = iblockdata.getBlock();
+ 
+@@ -849,7 +849,7 @@ public interface DispenseItemBehavior {
+                 if (!event.getItem().equals(craftItem)) {
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -857,8 +857,8 @@ public interface DispenseItemBehavior {
+                 }
+                 // CraftBukkit end
+ 
+-                if (block.is(BlockTags.BEEHIVES) && (Integer) iblockdata.getValue(BeehiveBlock.HONEY_LEVEL) >= 5) {
+-                    ((BeehiveBlock) iblockdata.getBlock()).releaseBeesAndResetHoneyLevel(world.getLevel(), iblockdata, blockposition, (Player) null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
++                if (block.is(BlockTags.BEEHIVES) && iblockdata.getValue(BeehiveBlock.HONEY_LEVEL) >= 5) {
++                    ((BeehiveBlock) iblockdata.getBlock()).releaseBeesAndResetHoneyLevel(world.getLevel(), iblockdata, blockposition, null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
+                     this.success = true;
+                     return this.a(isourceblock, itemstack, new ItemStack(Items.HONEY_BOTTLE));
+                 } else if (world.getFluidState(blockposition).is(FluidTags.WATER)) {
+@@ -868,8 +868,8 @@ public interface DispenseItemBehavior {
+                     return super.execute(isourceblock, itemstack);
+                 }
+             }
+-        }));
+-        DispenserBlock.registerBehavior((ItemLike) Items.SHEARS.asItem(), (DispenseItemBehavior) (new OptionalDispenseItemBehavior() {
++        });
++        DispenserBlock.registerBehavior(Items.SHEARS.asItem(), new OptionalDispenseItemBehavior() {
+             @Override
+             protected ItemStack execute(BlockSource isourceblock, ItemStack itemstack) {
+                 Level world = isourceblock.getLevel();
+@@ -889,7 +889,7 @@ public interface DispenseItemBehavior {
+                 if (!event.getItem().equals(craftItem)) {
+                     // Chain to handler for new item
+                     ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
+-                    DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++                    DispenseItemBehavior idispensebehavior = DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+                     if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
+                         idispensebehavior.dispense(isourceblock, eventStack);
+                         return itemstack;
+@@ -899,7 +899,7 @@ public interface DispenseItemBehavior {
+ 
+                 if (!world.isClientSide()) {
+                     this.success = false;
+-                    BlockPos blockposition = isourceblock.getPos().relative((Direction) isourceblock.getBlockState().getValue(DispenserBlock.FACING));
++                    BlockPos blockposition = isourceblock.getPos().relative(isourceblock.getBlockState().getValue(DispenserBlock.FACING));
+                     List<Sheep> list = world.getEntitiesOfClass(Sheep.class, new AABB(blockposition));
+                     Iterator iterator1 = list.iterator();
+ 
+@@ -913,7 +913,7 @@ public interface DispenseItemBehavior {
+                             }
+                             // CraftBukkit end
+                             entitysheep.shear();
+-                            if (itemstack.hurt(1, world.random, (ServerPlayer) null)) {
++                            if (itemstack.hurt(1, world.random, null)) {
+                                 itemstack.setCount(0);
+                             }
+ 
+@@ -926,15 +926,15 @@ public interface DispenseItemBehavior {
+                         BlockState iblockdata = world.getBlockState(blockposition);
+ 
+                         if (iblockdata.is(BlockTags.BEEHIVES)) {
+-                            int k = (Integer) iblockdata.getValue(BeehiveBlock.HONEY_LEVEL);
++                            int k = iblockdata.getValue(BeehiveBlock.HONEY_LEVEL);
+ 
+                             if (k >= 5) {
+-                                if (itemstack.hurt(1, world.random, (ServerPlayer) null)) {
++                                if (itemstack.hurt(1, world.random, null)) {
+                                     itemstack.setCount(0);
+                                 }
+ 
+                                 BeehiveBlock.dropHoneycomb(world, blockposition);
+-                                ((BeehiveBlock) iblockdata.getBlock()).releaseBeesAndResetHoneyLevel(world, iblockdata, blockposition, (Player) null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
++                                ((BeehiveBlock) iblockdata.getBlock()).releaseBeesAndResetHoneyLevel(world, iblockdata, blockposition, null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
+                                 this.success = true;
+                             }
+                         }
+@@ -943,6 +943,6 @@ public interface DispenseItemBehavior {
  
                  return itemstack;
              }
 -        }));
 +        });
-         DispenserBlock.registerBehavior((ItemLike) Blocks.SHULKER_BOX.asItem(), (DispenseItemBehavior) (new ShulkerBoxDispenseBehavior()));
-         DyeColor[] aenumcolor = DyeColor.values();
-         int i = aenumcolor.length;
-@@ -825,7 +825,6 @@ public interface DispenseItemBehavior {
-                 }
-             }
- 
--            @Override
-             public ItemStack lambda$static$0(BlockSource isourceblock, ItemStack itemstack) {
-                 this.success = false;
-                 Level world = isourceblock.getLevel();
+     }
+ }
 diff --git a/src/main/java/net/minecraft/server/EULA.java b/src/main/java/net/minecraft/server/EULA.java
-index e9452d551..48d97ea03 100644
+index e9452d5515c3d564a0104eb09e5c0a6b1bb1beb0..65ee95a3f9bf86f1922489636d9639b4c45f8bbc 100644
 --- a/src/main/java/net/minecraft/server/EULA.java
 +++ b/src/main/java/net/minecraft/server/EULA.java
 @@ -8,13 +8,13 @@ import net.minecraft.SharedConstants;
@@ -145,7 +688,7 @@ index e9452d551..48d97ea03 100644
              return flag;
          } catch (Exception exception) {
 -            Eula.LOGGER.warn("Failed to load {}", this.file);
-+            LOGGER.warn("Failed to load {}", this.file);
++            EULA.LOGGER.warn("Failed to load {}", this.file);
              this.saveDefaults();
              return false;
          }
@@ -154,15 +697,15 @@ index e9452d551..48d97ea03 100644
                  }
              } catch (Exception exception) {
 -                Eula.LOGGER.warn("Failed to save {}", this.file, exception);
-+                LOGGER.warn("Failed to save {}", this.file, exception);
++                EULA.LOGGER.warn("Failed to save {}", this.file, exception);
              }
  
          }
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 81596fbf1..996a1f631 100644
+index 915c3b2e61b6600de98451d51c2b0adbd20cb894..243d44f7e71f662bec43f7dc009f6259346f25c9 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
-@@ -1738,7 +1738,7 @@ public class ServerLevel extends net.minecraft.world.level.Level {
+@@ -1737,7 +1737,7 @@ public class ServerLevel extends net.minecraft.world.level.Level {
          this.getChunkSourceOH().broadcastIncludingSelf(entity, new ClientboundEntityEventPacket(entity, b0));
      }
  
@@ -171,21 +714,8 @@ index 81596fbf1..996a1f631 100644
      public ServerChunkCache getChunkSourceOH() {
          return (ServerChunkCache) super.getChunkSource();
      }
-diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 7ca80f0a2..1df706fd8 100644
---- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-+++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -212,7 +212,7 @@ public class ServerGamePacketListenerImpl implements ServerGamePacketListener {
-     private long keepAliveChallenge; private void setKeepAliveID(long keepAliveID) { this.keepAliveChallenge = keepAliveID;}; private long getKeepAliveID() {return this.keepAliveChallenge; };  // Paper - OBFHELPER
-     // CraftBukkit start - multithreaded fields
-     private volatile int chatSpamTickCount;
--    private static final AtomicIntegerFieldUpdater chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerGamePacketListenerImpl.class, "chatThrottle");
-+    private static final AtomicIntegerFieldUpdater chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerGamePacketListenerImpl.class, "chatSpamTickCount");
-     private final java.util.concurrent.atomic.AtomicInteger tabSpamLimiter = new java.util.concurrent.atomic.AtomicInteger(); // Paper - configurable tab spam limits
-     // CraftBukkit end
-     private int dropSpamTickCount;
 diff --git a/src/main/java/net/minecraft/server/players/GameProfileCache.java b/src/main/java/net/minecraft/server/players/GameProfileCache.java
-index 3b661ac25..0d8ebc1b1 100644
+index 3b661ac25b12ce75b81d2104c2ec13991dcb4954..0d8ebc1b152eb3aafd9653d3079b71e53788593e 100644
 --- a/src/main/java/net/minecraft/server/players/GameProfileCache.java
 +++ b/src/main/java/net/minecraft/server/players/GameProfileCache.java
 @@ -344,7 +344,7 @@ public class GameProfileCache {
@@ -197,41 +727,33 @@ index 3b661ac25..0d8ebc1b1 100644
                      } else {
                          return null;
                      }
-diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 4594222d6..206f4b0fc 100644
---- a/src/main/java/net/minecraft/server/players/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -194,7 +194,7 @@ public abstract class PlayerList {
-         // PlayerList.LOGGER.info("{}[{}] logged in with entity id {} at ({}, {}, {})", entityplayer.getDisplayName().getString(), s1, entityplayer.getId(), entityplayer.locX(), entityplayer.locY(), entityplayer.locZ());
-         LevelData worlddata = worldserver.getLevelData();
+diff --git a/src/main/java/net/minecraft/util/datafix/DataFixers.java b/src/main/java/net/minecraft/util/datafix/DataFixers.java
+index 3eb8b43a59c4fc0f1f4a7d8bf5daa2455bb7e430..4fff8d734244489c50a94e0ce331a7a70f17c345 100644
+--- a/src/main/java/net/minecraft/util/datafix/DataFixers.java
++++ b/src/main/java/net/minecraft/util/datafix/DataFixers.java
+@@ -68,7 +68,6 @@ public class DataFixers {
+         return datafixerbuilder.build(Util.backgroundExecutor());
+     }
  
--        this.updatePlayerGameMode(entityplayer, (ServerPlayer) null, worldserver);
-+        this.updatePlayerGameMode(entityplayer, null, worldserver);
-         ServerGamePacketListenerImpl playerconnection = new ServerGamePacketListenerImpl(this.server, networkmanager, entityplayer);
-         GameRules gamerules = worldserver.getGameRules();
-         boolean flag = gamerules.getBoolean(GameRules.RULE_DO_IMMEDIATE_RESPAWN);
+-    public static DataFixer getDataFixer() { return getDataFixer(); } // Paper - OBFHELPER
+     public static DataFixer getDataFixer() {
+         return DataFixers.DATA_FIXER;
+     }
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 6b3e5eeed..bfeb917c9 100644
+index ac0be2d7f6544bcf05a3305ae9802ddd19a72389..79897fc6802732b862c363027b7199be2056d7ad 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -311,11 +311,11 @@ public abstract class Entity implements Nameable, CommandSource, KeyedObject { /
-         Boolean hardCollides = cachedOverrides.get(this.getClass());
-         if (hardCollides == null) {
-             try {
--                Object getHardCollisionBoxMethod = Entity.class.getMethod("au");
--                Object getHardCollisionBoxEntityMethod = Entity.class.getMethod("j", Entity.class);
--                if (!this.getClass().getMethod("au").equals(getHardCollisionBoxMethod)) {
-+                Object getHardCollisionBoxMethod = Entity.class.getMethod("getCollideBox");
-+                Object getHardCollisionBoxEntityMethod = Entity.class.getMethod("getCollideAgainstBox", Entity.class);
-+                if (!this.getClass().getMethod("getCollideBox").equals(getHardCollisionBoxMethod)) {
-                     hardCollides = Boolean.TRUE;
--                } else if (!this.getClass().getMethod("j", Entity.class).equals(getHardCollisionBoxEntityMethod)) {
-+                } else if (!this.getClass().getMethod("getCollideAgainstBox", Entity.class).equals(getHardCollisionBoxEntityMethod)) {
-                     hardCollides = Boolean.TRUE;
-                 } else {
-                     hardCollides = Boolean.FALSE;
+@@ -171,7 +171,7 @@ public abstract class Entity implements Nameable, CommandSource, KeyedObject { /
+     private CraftEntity bukkitEntity;
+ 
+     public ChunkMap.TrackedEntity tracker; // Paper
+-    boolean collisionLoadChunks = false; // Paper
++    public boolean collisionLoadChunks = false; // Paper
+     public Throwable addedToWorldStack; // Paper - entity debug
+     public CraftEntity getBukkitEntity() {
+         if (bukkitEntity == null) {
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index ad8a93ead..041999053 100644
+index 002ce01ffd204a8fb65cf4c641609ee3809ad95b..f925961ce4e96a301191019c86bf6cc9ceb3edc3 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -118,7 +118,6 @@ import org.bukkit.Location;
@@ -251,15 +773,6 @@ index ad8a93ead..041999053 100644
              event.setCancelled(itemstack == null);
              this.level.getServerOH().getPluginManager().callEvent(event);
  
-@@ -1539,7 +1538,7 @@ public abstract class LivingEntity extends Entity {
-         if (this.random.nextDouble() >= this.getAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getValue()) {
-             this.hasImpulse = true;
-             Vec3 vec3d = this.getDeltaMovement();
--            Vec3 vec3d1 = (new Vec3(d0, 0.0D, d1)).normalize().scale((double) f);
-+            Vec3 vec3d1 = (new Vec3(d0, 0.0D, d1)).normalize().scale(f);
- 
-             this.setDeltaMovement(vec3d.x / 2.0D - vec3d1.x, this.onGround ? Math.min(0.4D, vec3d.y / 2.0D + (double) f) : vec3d.y, vec3d.z / 2.0D - vec3d1.z);
- 
 @@ -1548,7 +1547,7 @@ public abstract class LivingEntity extends Entity {
              org.bukkit.util.Vector delta = new org.bukkit.util.Vector(currentMot.x - vec3d.x, currentMot.y - vec3d.y, currentMot.z - vec3d.z);
              // Restore old velocity to be able to access it in the event
@@ -269,72 +782,18 @@ index ad8a93ead..041999053 100644
                  this.setDeltaMovement(vec3d.x + delta.getX(), vec3d.y + delta.getY(), vec3d.z + delta.getZ());
              }
              // Paper end
-diff --git a/src/main/java/net/minecraft/world/entity/animal/SnowGolem.java b/src/main/java/net/minecraft/world/entity/animal/SnowGolem.java
-index e9fc17788..7da3f3df6 100644
---- a/src/main/java/net/minecraft/world/entity/animal/SnowGolem.java
-+++ b/src/main/java/net/minecraft/world/entity/animal/SnowGolem.java
-@@ -134,6 +134,11 @@ public class SnowGolem extends AbstractGolem implements RangedAttackMob {
-         this.level.addFreshEntity(entitysnowball);
-     }
- 
-+    @Override
-+    public void q(boolean flag) {
-+        this.setAggressive(flag);
-+    }
-+
-     @Override
-     protected float getStandingEyeHeight(Pose entitypose, EntityDimensions entitysize) {
-         return 1.7F;
-diff --git a/src/main/java/net/minecraft/world/entity/animal/horse/Llama.java b/src/main/java/net/minecraft/world/entity/animal/horse/Llama.java
-index a5687d9c7..392c59531 100644
---- a/src/main/java/net/minecraft/world/entity/animal/horse/Llama.java
-+++ b/src/main/java/net/minecraft/world/entity/animal/horse/Llama.java
-@@ -461,6 +461,11 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
-         this.spit(entityliving);
-     }
- 
-+    @Override
-+    public void q(boolean flag) {
-+        this.setAggressive(flag);
-+    }
-+
-     static class LlamaAttackWolfGoal extends NearestAttackableTargetGoal<Wolf> {
- 
-         public LlamaAttackWolfGoal(Llama entityllama) {
-diff --git a/src/main/java/net/minecraft/world/entity/boss/wither/WitherBoss.java b/src/main/java/net/minecraft/world/entity/boss/wither/WitherBoss.java
-index 07633677f..7bece2562 100644
---- a/src/main/java/net/minecraft/world/entity/boss/wither/WitherBoss.java
-+++ b/src/main/java/net/minecraft/world/entity/boss/wither/WitherBoss.java
-@@ -485,6 +485,11 @@ public class WitherBoss extends Monster implements RangedAttackMob {
-         this.performRangedAttack(0, entityliving);
-     }
- 
-+    @Override
-+    public void q(boolean flag) {
-+        this.setAggressive(flag);
-+    }
-+
-     @Override
-     public boolean hurt(DamageSource damagesource, float f) {
-         if (this.isInvulnerableTo(damagesource)) {
 diff --git a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
-index 9baeb30fc..27c870988 100644
+index 84a3037d431b9258b9cb3d96fdfea77ea39f7422..e691f3a9a7c6624d130ca1290bd48bdc1a7bc56d 100644
 --- a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
-@@ -38,12 +38,11 @@ import net.minecraft.world.level.block.Blocks;
- import net.minecraft.world.level.material.PushReaction;
- import net.minecraft.world.phys.Vec3;
- // CraftBukkit start
--import org.bukkit.inventory.EquipmentSlot;
+@@ -41,7 +41,6 @@ import net.minecraft.world.phys.Vec3;
+ import org.bukkit.inventory.EquipmentSlot;
  import org.bukkit.craftbukkit.CraftEquipmentSlot;
  import org.bukkit.craftbukkit.inventory.CraftItemStack;
 -import org.bukkit.entity.ArmorStand;
  import org.bukkit.entity.Player;
  import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
-+import org.bukkit.inventory.EquipmentSlot;
  // CraftBukkit end
- 
- public class ArmorStand extends LivingEntity {
 @@ -451,7 +450,7 @@ public class ArmorStand extends LivingEntity {
              org.bukkit.inventory.ItemStack playerHeldItem = CraftItemStack.asCraftMirror(itemstack);
  
@@ -344,56 +803,19 @@ index 9baeb30fc..27c870988 100644
  
              EquipmentSlot slot = CraftEquipmentSlot.getSlot(enumitemslot);
              PlayerArmorStandManipulateEvent armorStandManipulateEvent = new PlayerArmorStandManipulateEvent(player,self,playerHeldItem,armorStandItem,slot);
-diff --git a/src/main/java/net/minecraft/world/entity/monster/Drowned.java b/src/main/java/net/minecraft/world/entity/monster/Drowned.java
-index f2e92eb52..5db045560 100644
---- a/src/main/java/net/minecraft/world/entity/monster/Drowned.java
-+++ b/src/main/java/net/minecraft/world/entity/monster/Drowned.java
-@@ -242,6 +242,11 @@ public class Drowned extends Zombie implements RangedAttackMob {
-         this.level.addFreshEntity(entitythrowntrident);
-     }
+diff --git a/src/main/java/net/minecraft/world/entity/monster/RangedAttackMob.java b/src/main/java/net/minecraft/world/entity/monster/RangedAttackMob.java
+index ea0dd808697d135f88ea7a8ef929489ff4882c0f..a48f896038369d02fd6b78a7d55bb68878d74f36 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/RangedAttackMob.java
++++ b/src/main/java/net/minecraft/world/entity/monster/RangedAttackMob.java
+@@ -7,5 +7,5 @@ public interface RangedAttackMob {
+     void performRangedAttack(LivingEntity entityliving, float f); default void rangedAttack(LivingEntity entityliving, float f) { performRangedAttack(entityliving, f); } // Paper - OBFHELPER
  
-+    @Override
-+    public void q(boolean flag) {
-+        setChargingAttack(flag);
-+    }
-+
-     public void setSearchingForLand(boolean flag) {
-         this.searchingForLand = flag;
-     }
-diff --git a/src/main/java/net/minecraft/world/entity/monster/Illusioner.java b/src/main/java/net/minecraft/world/entity/monster/Illusioner.java
-index 94d867f36..c2e45a912 100644
---- a/src/main/java/net/minecraft/world/entity/monster/Illusioner.java
-+++ b/src/main/java/net/minecraft/world/entity/monster/Illusioner.java
-@@ -188,6 +188,11 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
-         // Paper end
-     }
- 
-+    @Override
-+    public void q(boolean flag) {
-+        setChargingAttack(flag);
-+    }
-+
-     class IllusionerBlindnessSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
- 
-         private int lastTargetId;
-diff --git a/src/main/java/net/minecraft/world/entity/monster/Pillager.java b/src/main/java/net/minecraft/world/entity/monster/Pillager.java
-index f1211537d..8ee656d28 100644
---- a/src/main/java/net/minecraft/world/entity/monster/Pillager.java
-+++ b/src/main/java/net/minecraft/world/entity/monster/Pillager.java
-@@ -198,6 +198,11 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Rang
-         this.noActionTime = 0;
-     }
- 
-+    @Override
-+    public void q(boolean flag) {
-+        this.entityData.set(IS_CHARGING_CROSSBOW, flag);
-+    }
-+
-     @Override
-     public void shootProjectile(LivingEntity entityliving, ItemStack itemstack, Projectile iprojectile, float f) {
-         Entity entity = (Entity) iprojectile;
+     // - see EntitySkeletonAbstract melee goal
+-    void q(boolean flag); default void setChargingAttack(boolean charging) { q(charging); }; // Paper
++    void setAggressive(boolean flag); default void setChargingAttack(boolean charging) { setAggressive(charging); }; // Paper
+ }
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Slime.java b/src/main/java/net/minecraft/world/entity/monster/Slime.java
-index 8d24fb86f..7f3ca4c92 100644
+index 8d24fb86fdf7690cadbe57f2a872bc2db0d637dd..7f3ca4c92a3a103f7fec9a35e46587d9204fe8ad 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Slime.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Slime.java
 @@ -45,7 +45,6 @@ import com.destroystokyo.paper.event.entity.SlimeSwimEvent;
@@ -450,7 +872,7 @@ index 8d24fb86f..7f3ca4c92 100644
          }
  
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Witch.java b/src/main/java/net/minecraft/world/entity/monster/Witch.java
-index 44cbf0acf..71e2e91b5 100644
+index 44cbf0acf4155a39ad593a95e6da6b2ec084b775..85d37640e4ddeba2b39c91dc88fc7bbef7e5b93e 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Witch.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Witch.java
 @@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster;
@@ -470,34 +892,8 @@ index 44cbf0acf..71e2e91b5 100644
          setPotionUseTimeLeft(getMainHandItem().getItemUseMaxDuration());
          setDrinkingPotion(true);
          level.sendSoundEffect(null, getX(), getY(), getZ(), SoundEvents.WITCH_DRINK, getSoundSource(), 1.0F, 0.8F + random.nextFloat() * 0.4F);
-@@ -264,6 +263,11 @@ public class Witch extends Raider implements RangedAttackMob {
-         }
-     }
- 
-+    @Override
-+    public void q(boolean flag) {
-+        setUsingItem(flag);
-+    }
-+
-     @Override
-     protected float getStandingEyeHeight(Pose entitypose, EntityDimensions entitysize) {
-         return 1.62F;
-diff --git a/src/main/java/net/minecraft/world/entity/monster/WitherSkeleton.java b/src/main/java/net/minecraft/world/entity/monster/WitherSkeleton.java
-index 8b7f30194..c56e6fe41 100644
---- a/src/main/java/net/minecraft/world/entity/monster/WitherSkeleton.java
-+++ b/src/main/java/net/minecraft/world/entity/monster/WitherSkeleton.java
-@@ -115,4 +115,9 @@ public class WitherSkeleton extends AbstractSkeleton {
-     public boolean canBeAffected(MobEffectInstance mobeffect) {
-         return mobeffect.getEffect() == MobEffects.WITHER ? false : super.canBeAffected(mobeffect);
-     }
-+
-+    @Override
-+    public void q(boolean flag) {
-+        this.setAggressive(flag);
-+    }
- }
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
-index fb54868ab..9c3087c71 100644
+index fb54868aba4199d34145577530ae264f7f607171..9c3087c711dae2b5f95120634a6cbc6cb22ed9dc 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
 @@ -68,7 +68,6 @@ import net.minecraft.world.level.block.Blocks;
@@ -518,7 +914,7 @@ index fb54868ab..9c3087c71 100644
              }
              // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java b/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java
-index 2035a4274..33de1ed26 100644
+index 2035a42742758baad0e857e448008d47b5989fa1..33de1ed2651c4fffc5b180c9d7bdc09b8fc7730b 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java
 @@ -46,7 +46,6 @@ import net.minecraft.world.level.block.Block;
@@ -539,7 +935,7 @@ index 2035a4274..33de1ed26 100644
          }
          if (!new com.destroystokyo.paper.event.entity.EntityTransformedEvent(this.getBukkitEntity(), entityvillager.getBukkitEntity(), com.destroystokyo.paper.event.entity.EntityTransformedEvent.TransformedReason.CURED).callEvent()) return; // Paper
 diff --git a/src/main/java/net/minecraft/world/entity/npc/AbstractVillager.java b/src/main/java/net/minecraft/world/entity/npc/AbstractVillager.java
-index f15203761..628b05628 100644
+index f152037611fea0bd0d112a2e49b60ef8827f4988..31d6bcc190efffa6b8291fae1c6fe6ab50359e07 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/AbstractVillager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/AbstractVillager.java
 @@ -35,7 +35,6 @@ import net.minecraft.world.level.dimension.DimensionType;
@@ -550,7 +946,19 @@ index f15203761..628b05628 100644
  import org.bukkit.event.entity.VillagerAcquireTradeEvent;
  // CraftBukkit end
  
-@@ -274,7 +273,7 @@ public abstract class AbstractVillager extends AgableMob implements Npc, Merchan
+@@ -252,6 +251,11 @@ public abstract class AbstractVillager extends AgableMob implements Npc, Merchan
+ 
+     protected abstract void updateTrades();
+ 
++    @Override
++    public Level getLevel() {
++        return level;
++    }
++
+     protected void a(MerchantOffers merchantrecipelist, VillagerTrades.ItemListing[] avillagertrades_imerchantrecipeoption, int i) {
+         Set<Integer> set = Sets.newHashSet();
+ 
+@@ -274,7 +278,7 @@ public abstract class AbstractVillager extends AgableMob implements Npc, Merchan
  
              if (merchantrecipe != null) {
                  // CraftBukkit start
@@ -559,78 +967,27 @@ index f15203761..628b05628 100644
                  // Suppress during worldgen
                  if (this.valid) {
                      Bukkit.getPluginManager().callEvent(event);
+@@ -286,5 +290,7 @@ public abstract class AbstractVillager extends AgableMob implements Npc, Merchan
+             }
+         }
+ 
++
++
+     }
+ }
 diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-index 826abafd6..e88299cd4 100644
+index a1952dfeb1dd0572da5dbf2517ad8d7ba9183c50..ed720bd6c7710aa1139b3355fbd3d35116c5f579 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-@@ -7,15 +7,6 @@ import com.mojang.datafixers.Dynamic;
- import com.mojang.datafixers.types.DynamicOps;
- import com.mojang.datafixers.util.Pair;
- import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
--import java.util.Iterator;
--import java.util.List;
--import java.util.Map;
--import java.util.Optional;
--import java.util.Set;
--import java.util.Map.Entry;
--import java.util.function.BiPredicate;
--import java.util.stream.Collectors;
--import javax.annotation.Nullable;
- import net.minecraft.core.BlockPos;
- import net.minecraft.core.GlobalPos;
- import net.minecraft.core.Registry;
-@@ -42,14 +33,7 @@ import net.minecraft.world.SimpleContainer;
- import net.minecraft.world.damagesource.DamageSource;
- import net.minecraft.world.effect.MobEffectInstance;
- import net.minecraft.world.effect.MobEffects;
--import net.minecraft.world.entity.AgableMob;
--import net.minecraft.world.entity.Entity;
--import net.minecraft.world.entity.EntityType;
--import net.minecraft.world.entity.ExperienceOrb;
--import net.minecraft.world.entity.LivingEntity;
--import net.minecraft.world.entity.MobSpawnType;
--import net.minecraft.world.entity.ReputationEventHandler;
--import net.minecraft.world.entity.SpawnGroupData;
-+import net.minecraft.world.entity.*;
- import net.minecraft.world.entity.ai.Brain;
- import net.minecraft.world.entity.ai.behavior.VillagerGoalPackages;
- import net.minecraft.world.entity.ai.gossip.GossipContainer;
-@@ -80,15 +64,17 @@ import net.minecraft.world.level.Level;
- import net.minecraft.world.level.LevelAccessor;
- import net.minecraft.world.level.LevelReader;
- import net.minecraft.world.phys.AABB;
--// CraftBukkit start
- import org.bukkit.Bukkit;
--import org.bukkit.craftbukkit.entity.CraftVillager;
+@@ -85,7 +85,6 @@ import org.bukkit.Bukkit;
+ import org.bukkit.craftbukkit.entity.CraftVillager;
  import org.bukkit.craftbukkit.event.CraftEventFactory;
--import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
+ import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
 -import org.bukkit.entity.Villager;
  import org.bukkit.event.entity.EntityTransformEvent;
--import org.bukkit.event.entity.VillagerAcquireTradeEvent;
+ import org.bukkit.event.entity.VillagerAcquireTradeEvent;
  import org.bukkit.event.entity.VillagerReplenishTradeEvent;
-+
-+import javax.annotation.Nullable;
-+import java.util.*;
-+import java.util.function.BiPredicate;
-+import java.util.stream.Collectors;
-+
-+// CraftBukkit start
- // CraftBukkit end
- 
- public class Villager extends AbstractVillager implements ReputationEventHandler, VillagerDataHolder {
-@@ -317,6 +303,11 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
- 
-     }
- 
-+    @Override
-+    public Level getLevel() {
-+        return this.level;
-+    }
-+
-     @Override
-     protected void stopTrading() {
-         super.stopTrading();
-@@ -440,7 +431,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -440,7 +439,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
  
                  // CraftBukkit start
                  int bonus = -Mth.floor((float) i * merchantrecipe.getPriceMultiplier());
@@ -639,24 +996,8 @@ index 826abafd6..e88299cd4 100644
                  Bukkit.getPluginManager().callEvent(event);
                  if (!event.isCancelled()) {
                      merchantrecipe.addToSpecialPriceDiff(event.getBonus());
-diff --git a/src/main/java/net/minecraft/world/entity/npc/WanderingTrader.java b/src/main/java/net/minecraft/world/entity/npc/WanderingTrader.java
-index 2a13ed619..c5c58a520 100644
---- a/src/main/java/net/minecraft/world/entity/npc/WanderingTrader.java
-+++ b/src/main/java/net/minecraft/world/entity/npc/WanderingTrader.java
-@@ -92,6 +92,11 @@ public class WanderingTrader extends net.minecraft.world.entity.npc.AbstractVill
-         return null;
-     }
- 
-+    @Override
-+    public Level getLevel() {
-+        return this.level;
-+    }
-+
-     @Override
-     public boolean showProgressBar() {
-         return false;
 diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index 8c496bc85..7cd77da3b 100644
+index 4b1035069fe493bfe63a8727afa2052374d0166c..abaa614ebbe3a1ae115fb65861eb40342478b70d 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
 @@ -113,7 +113,6 @@ import net.minecraft.world.scores.Scoreboard;
@@ -676,16 +1017,7 @@ index 8c496bc85..7cd77da3b 100644
              Item drop = (Item) entityitem.getBukkitEntity();
  
              PlayerDropItemEvent event = new PlayerDropItemEvent(player, drop);
-@@ -1152,7 +1151,7 @@ public abstract class Player extends LivingEntity {
-                 f *= 0.2F + f2 * f2 * 0.8F;
-                 f1 *= f2;
-                 // Paper start - PlayerAttackEntityCooldownResetEvent
--                if (new com.destroystokyo.paper.event.player.PlayerAttackEntityCooldownResetEvent((Player) this.getBukkitEntity(), entity.getBukkitEntity(), this.getCooledAttackStrength(0F)).callEvent()) {
-+                if (new com.destroystokyo.paper.event.player.PlayerAttackEntityCooldownResetEvent((org.bukkit.entity.Player) this.getBukkitEntity(), entity.getBukkitEntity(), this.getCooledAttackStrength(0F)).callEvent()) {
-                     this.resetCooldown(); // reset it like normal
-                 }
-                 // Paper end
-@@ -1250,7 +1249,7 @@ public abstract class Player extends LivingEntity {
+@@ -1246,7 +1245,7 @@ public abstract class Player extends LivingEntity {
                          if (entity instanceof ServerPlayer && entity.hurtMarked) {
                              // CraftBukkit start - Add Velocity Event
                              boolean cancelled = false;
@@ -694,7 +1026,7 @@ index 8c496bc85..7cd77da3b 100644
                              org.bukkit.util.Vector velocity = CraftVector.toBukkit(vec3d);
  
                              PlayerVelocityEvent event = new PlayerVelocityEvent(player, velocity.clone());
-@@ -1457,7 +1456,7 @@ public abstract class Player extends LivingEntity {
+@@ -1453,7 +1452,7 @@ public abstract class Player extends LivingEntity {
              bedResult = Either.right(Unit.INSTANCE);
          }
  
@@ -703,7 +1035,7 @@ index 8c496bc85..7cd77da3b 100644
              bedResult = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerBedEnterEvent(this, blockposition, bedResult);
  
              if (bedResult.left().isPresent()) {
-@@ -1506,8 +1505,8 @@ public abstract class Player extends LivingEntity {
+@@ -1502,8 +1501,8 @@ public abstract class Player extends LivingEntity {
          }
  
          // CraftBukkit start - fire PlayerBedLeaveEvent
@@ -714,8 +1046,37 @@ index 8c496bc85..7cd77da3b 100644
  
              org.bukkit.block.Block bed;
              if (bedPosition != null) {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
+index 372fc1dbfc15ae44010717bcd93555489a63f7d5..5902c297ef2d275c42bc997711077b7291902d20 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
++++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
+@@ -106,7 +106,6 @@ public class LevelChunkSection {
+         return this.nonEmptyBlockCount == 0;
+     }
+ 
+-    public static boolean isEmpty(@Nullable LevelChunkSection chunksection) { return isEmpty(chunksection) ; } // Paper - OBFHELPER
+     public static boolean isEmpty(@Nullable LevelChunkSection chunksection) {
+         return chunksection == LevelChunk.EMPTY_SECTION || chunksection.isEmpty();
+     }
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
+index 2908ecece1ef9c3b2f211e4438add19064600b9c..817383470603a5cde75f6fa882e65c43c559e73d 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
+@@ -442,12 +442,6 @@ public class RegionFile implements AutoCloseable {
+                 }
+             }
+         } catch (java.lang.NoSuchMethodException e) {}
+-        if (cleaner == null && getVersion() <= 8) {
+-            cleaner = (buf) -> {
+-                ((sun.nio.ch.DirectBuffer) buf).cleaner().clean();
+-            };
+-            LOGGER.info("[RegionFile] Using Java 8 DirectByteBuffer cleanup method");
+-        }
+     }
+     public static void cleanDirectByteBuffer(ByteBuffer toBeDestroyed) {
+         try {
 diff --git a/src/main/java/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java b/src/main/java/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
-index cd0d98190..26ed6973a 100644
+index cd0d98190216de94def9431979fc1e6a735a3ba1..26ed6973a9e4e783df2c94b92682f927b10fcb41 100644
 --- a/src/main/java/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
 +++ b/src/main/java/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
 @@ -446,7 +446,7 @@ public class MapItemSavedData extends SavedData {
@@ -728,7 +1089,7 @@ index cd0d98190..26ed6973a 100644
                  // If this cursor is for a player check visibility with vanish system
                  org.bukkit.entity.Player other = org.bukkit.Bukkit.getPlayerExact(name); // Spigot
 diff --git a/src/main/java/net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer.java b/src/main/java/net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer.java
-index 51aaaa44e..968db1ab1 100644
+index 51aaaa44e0e4445812e7545648ea5839aa524406..968db1ab1fd6cf662d78a2adeb7b2724d67528a2 100644
 --- a/src/main/java/net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer.java
 +++ b/src/main/java/net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer.java
 @@ -166,7 +166,7 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer
@@ -742,7 +1103,7 @@ index 51aaaa44e..968db1ab1 100644
                  final int weightBoost = 100;
 diff --git a/src/main/resources/configurations/bukkit.yml b/src/main/resources/configurations/bukkit.yml
 new file mode 100644
-index 000000000..e9cee1713
+index 0000000000000000000000000000000000000000..e9cee1713ef7b7be3347e5bf3ecf4261e843ad3c
 --- /dev/null
 +++ b/src/main/resources/configurations/bukkit.yml
 @@ -0,0 +1,39 @@
@@ -787,7 +1148,7 @@ index 000000000..e9cee1713
 +aliases: now-in-commands.yml
 diff --git a/src/main/resources/configurations/commands.yml b/src/main/resources/configurations/commands.yml
 new file mode 100644
-index 000000000..0f45c397d
+index 0000000000000000000000000000000000000000..0f45c397df38e8af1c8b5bb8ca24f54a88e5880b
 --- /dev/null
 +++ b/src/main/resources/configurations/commands.yml
 @@ -0,0 +1,17 @@
@@ -810,7 +1171,7 @@ index 000000000..0f45c397d
 +      - "version $1-"
 diff --git a/src/main/resources/configurations/help.yml b/src/main/resources/configurations/help.yml
 new file mode 100644
-index 000000000..15c3d0707
+index 0000000000000000000000000000000000000000..15c3d07070624ad453032a02d8d4d3f26bd6cb8d
 --- /dev/null
 +++ b/src/main/resources/configurations/help.yml
 @@ -0,0 +1,55 @@
@@ -871,7 +1232,7 @@ index 000000000..15c3d0707
 +#    - PluginNameThree
 diff --git a/src/main/resources/log4j2.component.properties b/src/main/resources/log4j2.component.properties
 new file mode 100644
-index 000000000..30efeb5fa
+index 0000000000000000000000000000000000000000..30efeb5faf8e7faccf1b252fa0ed6a9fc31c40a7
 --- /dev/null
 +++ b/src/main/resources/log4j2.component.properties
 @@ -0,0 +1,3 @@
@@ -880,7 +1241,7 @@ index 000000000..30efeb5fa
 +log4j.skipJansi=true
 diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
 new file mode 100644
-index 000000000..a9bb98765
+index 0000000000000000000000000000000000000000..476f4a5cbe664ddd05474cb88553018bd334a5b8
 --- /dev/null
 +++ b/src/main/resources/log4j2.xml
 @@ -0,0 +1,43 @@
@@ -892,21 +1253,21 @@ index 000000000..a9bb98765
 +        </Queue>
 +        <TerminalConsole name="TerminalConsole">
 +            <PatternLayout>
-+                <LoggerNamePatternSelector defaultPattern="%highlightError{[%d{HH:mm:ss} %level]: [%logger] %minecraftFormatting{%msg}%n%xEx}">
++                <LoggerNamePatternSelector defaultPattern="%highlightError{[%d{HH:mm:ss} %level]: [%logger] %minecraftFormatting{%msg}%n%xEx{full}}">
 +                    <!-- Log root, Minecraft, Mojang and Bukkit loggers without prefix -->
 +                    <!-- Disable prefix for various plugins that bypass the plugin logger -->
 +                    <PatternMatch key=",net.minecraft.,Minecraft,com.mojang.,com.sk89q.,ru.tehkode.,Minecraft.AWE"
-+                                  pattern="%highlightError{[%d{HH:mm:ss} %level]: %minecraftFormatting{%msg}%n%xEx}" />
++                                  pattern="%highlightError{[%d{HH:mm:ss} %level]: %minecraftFormatting{%msg}%n%xEx{full}}" />
 +                </LoggerNamePatternSelector>
 +            </PatternLayout>
 +        </TerminalConsole>
 +        <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
 +            <PatternLayout>
-+                <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss}] [%t/%level]: [%logger] %minecraftFormatting{%msg}{strip}%n">
++                <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss}] [%t/%level]: [%logger] %minecraftFormatting{%msg}{strip}%n%xEx{full}">
 +                    <!-- Log root, Minecraft, Mojang and Bukkit loggers without prefix -->
 +                    <!-- Disable prefix for various plugins that bypass the plugin logger -->
 +                    <PatternMatch key=",net.minecraft.,Minecraft,com.mojang.,com.sk89q.,ru.tehkode.,Minecraft.AWE"
-+                                  pattern="[%d{HH:mm:ss}] [%t/%level]: %minecraftFormatting{%msg}{strip}%n" />
++                                  pattern="[%d{HH:mm:ss}] [%t/%level]: %minecraftFormatting{%msg}{strip}%n%xEx{full}" />
 +                </LoggerNamePatternSelector>
 +            </PatternLayout>
 +            <Policies>
@@ -927,6 +1288,3 @@ index 000000000..a9bb98765
 +        </Root>
 +    </Loggers>
 +</Configuration>
--- 
-2.26.2
-
