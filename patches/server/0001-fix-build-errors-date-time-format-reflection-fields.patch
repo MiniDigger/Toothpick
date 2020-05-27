@@ -702,10 +702,10 @@ index e9452d5515c3d564a0104eb09e5c0a6b1bb1beb0..65ee95a3f9bf86f1922489636d9639b4
  
          }
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 915c3b2e61b6600de98451d51c2b0adbd20cb894..243d44f7e71f662bec43f7dc009f6259346f25c9 100644
+index d3e63c5d171848251c3534b09109a3d8f4d5066a..51f3f6e707a062eb3531a81a2fa491f60b2fc57f 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
-@@ -1737,7 +1737,7 @@ public class ServerLevel extends net.minecraft.world.level.Level {
+@@ -1740,7 +1740,7 @@ public class ServerLevel extends net.minecraft.world.level.Level {
          this.getChunkSourceOH().broadcastIncludingSelf(entity, new ClientboundEntityEventPacket(entity, b0));
      }
  
@@ -1131,10 +1131,10 @@ index 51aaaa44e0e4445812e7545648ea5839aa524406..968db1ab1fd6cf662d78a2adeb7b2724
                  // Random boost to avoid losing precision in the final int cast on return
                  final int weightBoost = 100;
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 93340e9470b23f2d8c91338e63e95c6465e69c3c..2121bf3f213b0e7d97acfdad508cf9082e7bc3ac 100644
+index d6e5d014c0d81f5f7cff6638ccfc2e983fea53d9..c8ab4179def687f688b468ba9a2b467ee44bf153 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
-@@ -214,7 +214,7 @@ public class Main {
+@@ -245,7 +245,7 @@ public class Main {
                  }
  
                  if (Main.class.getPackage().getImplementationVendor() != null && System.getProperty("IReallyKnowWhatIAmDoingISwear") == null) {

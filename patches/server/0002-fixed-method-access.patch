@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ysl3000 <yannicklamprecht@live.de>
+Date: Wed, 27 May 2020 09:01:18 +0200
+Subject: [PATCH] fixed method access
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/PathNavigation.java b/src/main/java/net/minecraft/world/entity/ai/navigation/PathNavigation.java
+index 4f8dcbecbcbcb5523bb0447f88af43415c7261ae..52e68e0cbd3b4e7257daeb3cac9a454eca59015b 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/navigation/PathNavigation.java
++++ b/src/main/java/net/minecraft/world/entity/ai/navigation/PathNavigation.java
+@@ -129,7 +129,7 @@ public abstract class PathNavigation {
+ 
+     @Nullable
+     // Paper start - Add target
+-    protected Path createPath(Set<BlockPos> set, int i, boolean flag, int j) {
++    public Path createPath(Set<BlockPos> set, int i, boolean flag, int j) {
+         return this.a(set, null, i, flag, j);
+     }
+     @Nullable protected Path a(Set<BlockPos> set, Entity target, int i, boolean flag, int j) {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiRecord.java b/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiRecord.java
+index 24ca0bde89d0bf2beee17b4de98444c25f3c59bf..93c3d0f1db4e1d5a0dfe10fc410d7b7b49e5ac01 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiRecord.java
++++ b/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiRecord.java
+@@ -36,7 +36,7 @@ public class PoiRecord implements Serializable {
+         return dynamicops.createMap(ImmutableMap.of(dynamicops.createString("pos"), this.pos.serialize(dynamicops), dynamicops.createString("type"), dynamicops.createString(Registry.POINT_OF_INTEREST_TYPE.getKey(this.poiType).toString()), dynamicops.createString("free_tickets"), dynamicops.createInt(this.freeTickets)));
+     }
+ 
+-    protected final boolean decreaseVacancy() { return acquireTicket(); } // Paper - OBFHELPER
++    public final boolean decreaseVacancy() { return acquireTicket(); } // Paper - OBFHELPER
+     protected boolean acquireTicket() {
+         if (this.freeTickets <= 0) {
+             return false;
+@@ -63,7 +63,6 @@ public class PoiRecord implements Serializable {
+         return this.freeTickets > 0;
+     }
+ 
+-    public final boolean isOccupied() { return isOccupied(); } // Paper - OBFHELPER
+     public boolean isOccupied() {
+         return this.freeTickets != this.poiType.getMaxTickets();
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiType.java b/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiType.java
+index a34d080b8e0519759c1c29b29f1ec1e2cc72f4d3..3f4a2811759f44adc4e0f8e6681c9dd437b9397a 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiType.java
++++ b/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiType.java
+@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.state.properties.BedPart;
+ 
+ public class PoiType {
+ 
++    public static void deleteCache(){ professionCache = null; }// Toothpick
+     static Set<PoiType> professionCache; // Paper
+     private static final Predicate<PoiType> ALL_JOBS = (villageplacetype) -> {
+         // Paper start
+diff --git a/src/main/java/net/minecraft/world/entity/npc/VillagerProfession.java b/src/main/java/net/minecraft/world/entity/npc/VillagerProfession.java
+index 0563b5d1a113914f3e3b9678df477881d12a18cd..b382e54e1651a6d360f3346d87b4845f15a4fb0c 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/VillagerProfession.java
++++ b/src/main/java/net/minecraft/world/entity/npc/VillagerProfession.java
+@@ -70,7 +70,7 @@ public class VillagerProfession {
+     }
+ 
+     static VillagerProfession register(String s, PoiType villageplacetype, ImmutableSet<Item> immutableset, ImmutableSet<Block> immutableset1, @Nullable SoundEvent soundeffect) {
+-        PoiType.professionCache = null; // Paper
++        PoiType.deleteCache(); // Toothpick
+         return (VillagerProfession) Registry.register((Registry) Registry.VILLAGER_PROFESSION, new ResourceLocation(s), (Object) (new VillagerProfession(s, villageplacetype, immutableset, immutableset1, soundeffect)));
+     }
+ }
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/SectionStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/SectionStorage.java
+index ac5dc32ef6af0abda4bcc6b1191dc6b7cefb08cb..4408a724aff28a84c55e702ffa73cf49033058ca 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/SectionStorage.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/SectionStorage.java
+@@ -63,7 +63,7 @@ public class SectionStorage<R extends Serializable> extends RegionFileStorage im
+         return this.storage.getOrDefault(i, Optional.empty()); // Paper
+     }
+ 
+-    protected final Optional<R> getSection(long i) { return getOrLoad(i); } // Paper - OBFHELPER
++    public final Optional<R> getSection(long i) { return getOrLoad(i); } // Paper - OBFHELPER
+     protected Optional<R> getOrLoad(long i) {
+         // Paper start - replace method - never load POI data sync, we load this in chunk load already, reduce ops
+         // If it's an unloaded chunk, well too bad.
