@@ -3,10 +3,10 @@
 You really don't want to touch this yet.
 
 This project will allow you to create a paper fork using mojang mappings, rather than spigot mappings.  
-This means, that **every single** class/method/field is renamed to the origonal name, the minecraft developers use.  
+This means, that **every single** class/method/field is renamed to the original name, the minecraft developers use.  
 This makes it much easier to work on stuff.  
 
-An intended effect of this is, that all plugins build against this project, will also be able (or be forced, depends on your view, lol) to use mojang mappings.  
+An intended effect of this is, that all plugins built against this project, will also be able (or be forced, depends on your view, lol) to use mojang mappings.  
 That means, that almost every single public plugin breaks (every plugin that accesses nms), but makes it makes it much easier to write plugins that use internals.
 
 ## TODO
