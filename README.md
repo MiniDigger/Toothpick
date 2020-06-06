@@ -38,7 +38,7 @@ You can run those in both windows and linux env, but you shouldn't fix and match
 3. `git clone https://github.com/CadixDev/Lorenz/` (could require JDK-1.8 for compiling)
 4. `git checkout fix/mercury-14`
 5. `cd Mercury/ && ./gradlew build install`
-6. After building the dependencies `git clone https://github.com/yannicklamprecht/Toothpick` (requires JDK-11+ for compiling)
+6. After building the dependencies `git clone https://github.com/MiniDigger/Toothpick` (requires JDK-11+ for compiling)
 7. run (under Windows use `./gradle.bat` instead of `./gralew` 
     1. `./gradlew setupUpstream`
     2. `./gradlew mojangMappings`
