@@ -5,7 +5,7 @@ Subject: [PATCH] Toothpick
 
 
 diff --git a/pom.xml b/pom.xml
-index ef8ee637a8a0e5e703922b2991c58f4f116b23fb..c358880277b66a562c9eb9ccd6036b2755bb620f 100644
+index 594ab9afbd6249df8817eeb4eb50bffc986bfce1..1d8b093e94cde81797cd954061be0c58ae8b2bfd 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -153,6 +153,18 @@
