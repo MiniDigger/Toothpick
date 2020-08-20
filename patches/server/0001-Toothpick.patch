@@ -133,7 +133,7 @@ index 2949bdd254e16813543fb98541ab709d4ca6ed3a..4d05887f74e982def940e68bac078842
          protected DistanceManagerOH(Executor executor, Executor executor1) {
              super(executor, executor1);
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 6aa4d6ccbcaa3d7ff636e3a98fe08e7116111272..7f7a8e3cfe691885036996cb77c59432a418e499 100644
+index cb5ba4b890753a70cb024420db1f55a67ef18a33..6d373ce3f02d43e931c773800e35aadab1551594 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -115,6 +115,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
@@ -144,7 +144,7 @@ index 6aa4d6ccbcaa3d7ff636e3a98fe08e7116111272..7f7a8e3cfe691885036996cb77c59432
  import net.minecraft.world.level.chunk.ChunkStatus;
  import net.minecraft.world.level.chunk.LevelChunk;
  import net.minecraft.world.level.chunk.LevelChunkSection;
-@@ -1638,6 +1639,11 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+@@ -1642,6 +1643,11 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
          this.server.getPlayerList().sendPacketNearby(entityhuman, (double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ(), 64.0D, this.getDimensionKey(), new ClientboundLevelEventPacket(i, blockposition, j, false));
      }
  
@@ -156,7 +156,7 @@ index 6aa4d6ccbcaa3d7ff636e3a98fe08e7116111272..7f7a8e3cfe691885036996cb77c59432
      @Override
      public void notify(BlockPos blockposition, BlockState iblockdata, BlockState iblockdata1, int i) {
          this.getChunkSourceOH().blockChanged(blockposition);
-@@ -1665,7 +1671,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+@@ -1669,7 +1675,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
          this.getChunkSourceOH().broadcastIncludingSelf(entity, new ClientboundEntityEventPacket(entity, b0));
      }
  
@@ -165,7 +165,7 @@ index 6aa4d6ccbcaa3d7ff636e3a98fe08e7116111272..7f7a8e3cfe691885036996cb77c59432
      public ServerChunkCache getChunkSourceOH() {
          return this.chunkSource;
      }
-@@ -1735,6 +1741,11 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+@@ -1739,6 +1745,11 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
          return this.liquidTicks;
      }
  
@@ -177,7 +177,7 @@ index 6aa4d6ccbcaa3d7ff636e3a98fe08e7116111272..7f7a8e3cfe691885036996cb77c59432
      @Nonnull
      @Override
      public MinecraftServer getServer() {
-@@ -1745,7 +1756,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+@@ -1749,7 +1760,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
          return this.portalForcer;
      }
  
@@ -221,10 +221,10 @@ index 1e7558bb07ce8dbbed1e727e15ef892de46c0b8d..94f2db64882d091e3cb6c5cc85453134
          return this.getValue(this.indexOf(k0, this.hash(k0)));
      }
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 051540d7340c467041c8d2dc0b4e421345603908..ab64654a6f8e62c47c1a91f47f9ed3cb332c7dec 100644
+index 8a2f62b527195bb7f9885da1eef68fee68ba17ab..865ebe8537350d277cbb2192eb811f303fd951da 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -1173,7 +1173,6 @@ public abstract class Entity implements Nameable, CommandSource, KeyedObject { /
+@@ -1174,7 +1174,6 @@ public abstract class Entity implements Nameable, CommandSource, KeyedObject { /
          return this.level.isRainingAt(blockposition) || this.level.isRainingAt(new BlockPos((double) blockposition.getX(), this.getBoundingBox().maxY, (double) blockposition.getZ()));
      }
  
@@ -232,7 +232,7 @@ index 051540d7340c467041c8d2dc0b4e421345603908..ab64654a6f8e62c47c1a91f47f9ed3cb
      public boolean isInBubbleColumn() {
          return this.level.getType(this.blockPosition()).is(Blocks.BUBBLE_COLUMN);
      }
-@@ -1330,7 +1329,7 @@ public abstract class Entity implements Nameable, CommandSource, KeyedObject { /
+@@ -1331,7 +1330,7 @@ public abstract class Entity implements Nameable, CommandSource, KeyedObject { /
          return this.fluidOnEyes == tag;
      }
  
