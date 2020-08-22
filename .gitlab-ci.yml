@@ -12,10 +12,6 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
 stages:
-  - cleanup
-  - setup
-  - mappings
-  - patches
   - build
 
 before_script:
