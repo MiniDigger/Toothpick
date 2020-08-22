@@ -34,9 +34,13 @@ cleanup:
   stage: build
   script:
     - ./gradlew cleanUp
+    - sleep 10
     - ./gradlew setupUpstream
+    - sleep 10
     - ./gradlew mojangMappings
+    - sleep 10
     - ./gradlew applyPatches
+    - sleep 10
     - ./gradlew shadowJar
   artifacts:
     paths:
