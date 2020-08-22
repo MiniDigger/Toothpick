@@ -31,28 +31,12 @@ cache:
     - work
 
 cleanup:
-  stage: cleanup
-  script:
-    - ./gradlew cleanUp
-
-setup:
-  stage: setup
-  script:
-    - ./gradlew setupUpstream
-
-mappings:
-  stage: mappings
-  script:
-    - ./gradlew mojangMappings
-
-patches:
-  stage: patches
-  script:
-    - ./gradlew applyPatches
-
-build:
   stage: build
   script:
+    - ./gradlew cleanUp
+    - ./gradlew setupUpstream
+    - ./gradlew mojangMappings
+    - ./gradlew applyPatches
     - ./gradlew shadowJar
   artifacts:
     paths:
