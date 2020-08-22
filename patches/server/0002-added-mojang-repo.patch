@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ysl3000 <yannicklamprecht@live.de>
+Date: Sat, 22 Aug 2020 13:28:00 +0200
+Subject: [PATCH] added mojang repo
+
+
+diff --git a/pom.xml b/pom.xml
+index 1d8b093e94cde81797cd954061be0c58ae8b2bfd..604a8cef667932f4c4d4940c2670e14e5f357640 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -165,6 +165,11 @@
+             <id>destroystokyo-repo</id>
+             <url>https://papermc.io/repo/repository/maven-public/</url>
+         </repository>
++        <repository>
++            <id>minecraft-libraries</id>
++            <name>Minecraft Libraries</name>
++            <url>https://libraries.minecraft.net</url>
++        </repository>
+     </repositories>
+ 
+     <pluginRepositories>
