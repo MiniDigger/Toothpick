@@ -75,12 +75,21 @@ fun Project.initToothPickTasks(toothPickExtension: ToothPickExtension) = run {
                 ensureSuccess(cmd(*gitCommand.toTypedArray(), directory = projectDir, printToStdout = true))
                 logger.lifecycle(">>> Done")
             }
+
+        }
+    }
+    applyPatches.name
+
+    val copyResources: Task by tasks.creating {
+        group = taskGroupPublic
+        doLast {
             logger.lifecycle(">>> Copying over resources")
             projectDir.resolve("work/Paper/Paper-Server/src/main/resources/")
                     .copyRecursively(projectDir.resolve("MiniPaper-Server/src/main/resources/"))
         }
     }
-    applyPatches.name
+    copyResources.name
+
 
     val rebuildPatches: Task by tasks.creating {
         group = taskGroupPublic
