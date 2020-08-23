@@ -1,0 +1,608 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ysl3000 <yannicklamprecht@live.de>
+Date: Sun, 23 Aug 2020 13:29:49 +0200
+Subject: [PATCH] readd fixes that dropped accidently
+
+
+diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
+index b173bdccff755664450b280d582cb11c056f8a47..ca84433827d57a1d457fb19ee45f47ae13b7b4ae 100644
+--- a/src/main/java/net/minecraft/server/Main.java
++++ b/src/main/java/net/minecraft/server/Main.java
+@@ -206,7 +206,7 @@ public class Main {
+ 
+             convertable_conversionsession.a((IRegistryCustom) iregistrycustom_dimension, (SaveData) object);
+             */
+-            Class.forName("net.minecraft.server.VillagerTrades");// Paper - load this sync so it won't fail later async
++            Class.forName("net.minecraft.world.entity.npc.VillagerTrades");// Paper - load this sync so it won't fail later async
+             final DedicatedServer dedicatedserver = (DedicatedServer) MinecraftServer.spin((thread) -> {
+                 DedicatedServer dedicatedserver1 = new DedicatedServer(optionset, datapackconfiguration1, thread, iregistrycustom_dimension, convertable_conversionsession, resourcepackrepository, datapackresources, null, dedicatedserversettings, DataFixers.getDataFixerOH(), minecraftsessionservice, gameprofilerepository, usercache, LoggerChunkProgressListener::new);
+ 
+diff --git a/src/main/java/net/minecraft/server/commands/data/BlockDataAccessor.java b/src/main/java/net/minecraft/server/commands/data/BlockDataAccessor.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b50ad500d75ccee8d69f4a6d934841f0ae9d6d02
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/commands/data/BlockDataAccessor.java
+@@ -0,0 +1,80 @@
++//
++// Source code recreated from a .class file by IntelliJ IDEA
++// (powered by FernFlower decompiler)
++//
++
++package net.minecraft.server.commands.data;
++
++import com.mojang.brigadier.builder.ArgumentBuilder;
++import com.mojang.brigadier.context.CommandContext;
++import com.mojang.brigadier.exceptions.CommandSyntaxException;
++import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
++import java.util.Locale;
++import java.util.function.Function;
++import net.minecraft.commands.CommandSourceStack;
++import net.minecraft.commands.Commands;
++import net.minecraft.commands.arguments.NbtPathArgument.NbtPath;
++import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
++import net.minecraft.core.BlockPos;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.nbt.Tag;
++import net.minecraft.network.chat.Component;
++import net.minecraft.network.chat.TranslatableComponent;
++import net.minecraft.server.commands.data.DataCommands.c;
++import net.minecraft.world.level.block.entity.BlockEntity;
++import net.minecraft.world.level.block.state.BlockState;
++
++public class BlockDataAccessor implements DataAccessor {
++    private static final SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.block.invalid"));
++    public static final Function<String, c> PROVIDER = (var0) -> {
++        return new c() {
++            public DataAccessor access(CommandContext<CommandSourceStack> var0x) throws CommandSyntaxException {
++                BlockPos var1 = BlockPosArgument.getLoadedBlockPos(var0x, var0 + "Pos");
++                BlockEntity var2 = ((CommandSourceStack)var0x.getSource()).getLevel().getBlockEntity(var1);
++                if (var2 == null) {
++                    throw BlockDataAccessor.ERROR_NOT_A_BLOCK_ENTITY.create();
++                } else {
++                    return new BlockDataAccessor(var2, var1);
++                }
++            }
++
++            public ArgumentBuilder<CommandSourceStack, ?> a(ArgumentBuilder<CommandSourceStack, ?> var0x, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var1) {
++                return var0x.then(Commands.literal("block").then((ArgumentBuilder)var1.apply(Commands.argument(var0 + "Pos", BlockPosArgument.blockPos()))));
++            }
++        };
++    };
++    private final BlockEntity entity;
++    private final BlockPos pos;
++
++    public BlockDataAccessor(BlockEntity var0, BlockPos var1) {
++        this.entity = var0;
++        this.pos = var1;
++    }
++
++    public void setData(CompoundTag var0) {
++        var0.putInt("x", this.pos.getX());
++        var0.putInt("y", this.pos.getY());
++        var0.putInt("z", this.pos.getZ());
++        BlockState var1 = this.entity.getLevel().getType(this.pos);
++        this.entity.load(var1, var0);
++        this.entity.setChanged();
++        this.entity.getLevel().notify(this.pos, var1, var1, 3);
++    }
++
++    public CompoundTag getData() {
++        return this.entity.save(new CompoundTag());
++    }
++
++    public Component getModifiedSuccess() {
++        return new TranslatableComponent("commands.data.block.modified", new Object[]{this.pos.getX(), this.pos.getY(), this.pos.getZ()});
++    }
++
++    public Component getPrintSuccess(Tag var0) {
++        return new TranslatableComponent("commands.data.block.query", new Object[]{this.pos.getX(), this.pos.getY(), this.pos.getZ(), var0.getPrettyDisplay()});
++    }
++
++    public Component getPrintSuccess(NbtPath var0, double var1, int var3) {
++        return new TranslatableComponent("commands.data.block.get", new Object[]{var0, this.pos.getX(), this.pos.getY(), this.pos.getZ(), String.format(Locale.ROOT, "%.2f", var1), var3});
++    }
++}
++
+diff --git a/src/main/java/net/minecraft/server/commands/data/DataCommands.java b/src/main/java/net/minecraft/server/commands/data/DataCommands.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c04d7973b501779df8e19cc39dc32bc944a39fde
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/commands/data/DataCommands.java
+@@ -0,0 +1,315 @@
++//
++// Source code recreated from a .class file by IntelliJ IDEA
++// (powered by FernFlower decompiler)
++//
++
++package net.minecraft.server.commands.data;
++
++import com.google.common.collect.ImmutableList;
++import com.google.common.collect.Iterables;
++import com.mojang.brigadier.CommandDispatcher;
++import com.mojang.brigadier.arguments.DoubleArgumentType;
++import com.mojang.brigadier.arguments.IntegerArgumentType;
++import com.mojang.brigadier.builder.ArgumentBuilder;
++import com.mojang.brigadier.builder.LiteralArgumentBuilder;
++import com.mojang.brigadier.builder.RequiredArgumentBuilder;
++import com.mojang.brigadier.context.CommandContext;
++import com.mojang.brigadier.exceptions.CommandSyntaxException;
++import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
++import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
++import java.util.Collection;
++import java.util.Collections;
++import java.util.Iterator;
++import java.util.List;
++import java.util.function.BiConsumer;
++import java.util.function.Function;
++import net.minecraft.commands.CommandSourceStack;
++import net.minecraft.commands.Commands;
++import net.minecraft.commands.arguments.CompoundTagArgument;
++import net.minecraft.commands.arguments.NbtPathArgument;
++import net.minecraft.commands.arguments.NbtTagArgument;
++import net.minecraft.commands.arguments.NbtPathArgument.NbtPath;
++import net.minecraft.nbt.CollectionTag;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.nbt.ListTag;
++import net.minecraft.nbt.NumericTag;
++import net.minecraft.nbt.StringTag;
++import net.minecraft.nbt.Tag;
++import net.minecraft.network.chat.TranslatableComponent;
++import net.minecraft.util.Mth;
++
++public class DataCommands {
++    private static final SimpleCommandExceptionType ERROR_MERGE_UNCHANGED = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.merge.failed"));
++    private static final DynamicCommandExceptionType ERROR_GET_NOT_NUMBER = new DynamicCommandExceptionType((var0) -> {
++        return new TranslatableComponent("commands.data.get.invalid", new Object[]{var0});
++    });
++    private static final DynamicCommandExceptionType ERROR_GET_NON_EXISTENT = new DynamicCommandExceptionType((var0) -> {
++        return new TranslatableComponent("commands.data.get.unknown", new Object[]{var0});
++    });
++    private static final SimpleCommandExceptionType ERROR_MULTIPLE_TAGS = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.get.multiple"));
++    private static final DynamicCommandExceptionType ERROR_EXPECTED_LIST = new DynamicCommandExceptionType((var0) -> {
++        return new TranslatableComponent("commands.data.modify.expected_list", new Object[]{var0});
++    });
++    private static final DynamicCommandExceptionType ERROR_EXPECTED_OBJECT = new DynamicCommandExceptionType((var0) -> {
++        return new TranslatableComponent("commands.data.modify.expected_object", new Object[]{var0});
++    });
++    private static final DynamicCommandExceptionType ERROR_INVALID_INDEX = new DynamicCommandExceptionType((var0) -> {
++        return new TranslatableComponent("commands.data.modify.invalid_index", new Object[]{var0});
++    });
++    public static final List<Function<String, DataCommands.c>> ALL_PROVIDERS;
++    public static final List<DataCommands.c> TARGET_PROVIDERS;
++    public static final List<DataCommands.c> SOURCE_PROVIDERS;
++
++    public static void register(CommandDispatcher<CommandSourceStack> var0) {
++        LiteralArgumentBuilder<CommandSourceStack> var1 = (LiteralArgumentBuilder)Commands.literal("data").requires((var0x) -> {
++            return var0x.hasPermission(2);
++        });
++        Iterator var2 = TARGET_PROVIDERS.iterator();
++
++        while(var2.hasNext()) {
++            DataCommands.c var3 = (DataCommands.c)var2.next();
++            ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(var3.a(Commands.literal("merge"), (var1x) -> {
++                return var1x.then(Commands.argument("nbt", CompoundTagArgument.compoundTag()).executes((var1merge) -> {
++                    return mergeData((CommandSourceStack)var1merge.getSource(), var3.access(var1merge), CompoundTagArgument.getCompoundTag(var1merge, "nbt"));
++                }));
++            }))).then(var3.a(Commands.literal("get"), (var1x) -> {
++                return var1x.executes((var1get) -> {
++                    return getData((CommandSourceStack)var1get.getSource(), var3.access(var1get));
++                }).then(((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).executes((var1path) -> {
++                    return getData((CommandSourceStack)var1path.getSource(), var3.access(var1path), NbtPathArgument.getPath(var1path, "path"));
++                })).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var1scale) -> {
++                    return getNumeric((CommandSourceStack)var1scale.getSource(), var3.access(var1scale), NbtPathArgument.getPath(var1scale, "path"), DoubleArgumentType.getDouble(var1scale, "scale"));
++                })));
++            }))).then(var3.a(Commands.literal("remove"), (var1x) -> {
++                return var1x.then(Commands.argument("path", NbtPathArgument.nbtPath()).executes((var1remove) -> {
++                    return removeData((CommandSourceStack)var1remove.getSource(), var3.access(var1remove), NbtPathArgument.getPath(var1remove, "path"));
++                }));
++            }))).then(decorateModification((var0x, var1x) -> {
++                var0x.then(Commands.literal("insert").then(Commands.argument("index", IntegerArgumentType.integer()).then(var1x.create((var0insert, var1insert, var2insert, var3insert) -> {
++                    int var4 = IntegerArgumentType.getInteger(var0insert, "index");
++                    return insertAtIndex(var4, var1insert, var2insert, var3insert);
++                })))).then(Commands.literal("prepend").then(var1x.create((var0prepend, var1prepend, var2prepend, var3prepend) -> {
++                    return insertAtIndex(0, var1prepend, var2prepend, var3prepend);
++                }))).then(Commands.literal("append").then(var1x.create((var0append, var1append, var2append, var3append) -> {
++                    return insertAtIndex(-1, var1append, var2append, var3append);
++                }))).then(Commands.literal("set").then(var1x.create((var0set, var1set, var2set, var3set) -> {
++                    Tag var10002 = (Tag)Iterables.getLast(var3set);
++                    var10002.getClass();
++                    return var2set.set(var1set, var10002::copy);
++                }))).then(Commands.literal("merge").then(var1x.create((var0merge, var1merge, var2merge, var3merge) -> {
++                    Collection<Tag> var4 = var2merge.getOrCreate(var1merge, CompoundTag::new);
++                    int var5 = 0;
++
++                    CompoundTag var8;
++                    CompoundTag var9;
++                    for(Iterator var6 = var4.iterator(); var6.hasNext(); var5 += var9.equals(var8) ? 0 : 1) {
++                        Tag var7 = (Tag)var6.next();
++                        if (!(var7 instanceof CompoundTag)) {
++                            throw ERROR_EXPECTED_OBJECT.create(var7);
++                        }
++
++                        var8 = (CompoundTag)var7;
++                        var9 = var8.copy();
++                        Iterator var10 = var3merge.iterator();
++
++                        while(var10.hasNext()) {
++                            Tag var11 = (Tag)var10.next();
++                            if (!(var11 instanceof CompoundTag)) {
++                                throw ERROR_EXPECTED_OBJECT.create(var11);
++                            }
++
++                            var8.merge((CompoundTag)var11);
++                        }
++                    }
++
++                    return var5;
++                })));
++            }));
++        }
++
++        var0.register(var1);
++    }
++
++    private static int insertAtIndex(int var0, CompoundTag var1, NbtPath var2, List<Tag> var3) throws CommandSyntaxException {
++        Collection<Tag> var4 = var2.getOrCreate(var1, ListTag::new);
++        int var5 = 0;
++
++        boolean var8;
++        for(Iterator var6 = var4.iterator(); var6.hasNext(); var5 += var8 ? 1 : 0) {
++            Tag var7 = (Tag)var6.next();
++            if (!(var7 instanceof CollectionTag)) {
++                throw ERROR_EXPECTED_LIST.create(var7);
++            }
++
++            var8 = false;
++            CollectionTag<?> var9 = (CollectionTag)var7;
++            int var10 = var0 < 0 ? var9.size() + var0 + 1 : var0;
++            Iterator var11 = var3.iterator();
++
++            while(var11.hasNext()) {
++                Tag var12 = (Tag)var11.next();
++
++                try {
++                    if (var9.addTag(var10, var12.copy())) {
++                        ++var10;
++                        var8 = true;
++                    }
++                } catch (IndexOutOfBoundsException var14) {
++                    throw ERROR_INVALID_INDEX.create(var10);
++                }
++            }
++        }
++
++        return var5;
++    }
++
++    private static ArgumentBuilder<CommandSourceStack, ?> decorateModification(BiConsumer<ArgumentBuilder<CommandSourceStack, ?>, DataCommands.DataManipulatorDecorator> var0) {
++        LiteralArgumentBuilder<CommandSourceStack> var1 = Commands.literal("modify");
++        Iterator var2 = TARGET_PROVIDERS.iterator();
++
++        while(var2.hasNext()) {
++            DataCommands.c var3 = (DataCommands.c)var2.next();
++            var3.a(var1, (var2x) -> {
++                ArgumentBuilder<CommandSourceStack, ?> var3x = Commands.argument("targetPath", NbtPathArgument.nbtPath());
++                Iterator var4 = SOURCE_PROVIDERS.iterator();
++
++                while(var4.hasNext()) {
++                    DataCommands.c var5 = (DataCommands.c)var4.next();
++                    var0.accept(var3x, (var2modify) -> {
++                        return var5.a(Commands.literal("from"), (var3xmodify) -> {
++                            return var3x.executes((var3xx) -> {
++                                List<Tag> var4modify = Collections.singletonList(var5.access(var3xx).getData());
++                                return manipulateData(var3xx, var3, var2modify, var4modify);
++                            }).then(Commands.argument("sourcePath", NbtPathArgument.nbtPath()).executes((var3xx) -> {
++                                DataAccessor var4modify = var5.access(var3xx);
++                                NbtPath var5x = NbtPathArgument.getPath(var3xx, "sourcePath");
++                                List<Tag> var6 = var5x.get(var4modify.getData());
++                                return manipulateData(var3xx, var3, var2modify, var6);
++                            }));
++                        });
++                    });
++                }
++
++                var0.accept(var3x, (var1modify) -> {
++                    return (LiteralArgumentBuilder)Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes((var2modify) -> {
++                        List<Tag> var3xmodify = Collections.singletonList(NbtTagArgument.getNbtTag(var2modify, "value"));
++                        return manipulateData(var2modify, var3, var1modify, var3xmodify);
++                    }));
++                });
++                return var2x.then(var3x);
++            });
++        }
++
++        return var1;
++    }
++
++    private static int manipulateData(CommandContext<CommandSourceStack> var0, DataCommands.c var1, DataCommands.DataManipulator var2, List<Tag> var3) throws CommandSyntaxException {
++        DataAccessor var4 = var1.access(var0);
++        NbtPath var5 = NbtPathArgument.getPath(var0, "targetPath");
++        CompoundTag var6 = var4.getData();
++        int var7 = var2.modify(var0, var6, var5, var3);
++        if (var7 == 0) {
++            throw ERROR_MERGE_UNCHANGED.create();
++        } else {
++            var4.setData(var6);
++            ((CommandSourceStack)var0.getSource()).sendSuccess(var4.getModifiedSuccess(), true);
++            return var7;
++        }
++    }
++
++    private static int removeData(CommandSourceStack var0, DataAccessor var1, NbtPath var2) throws CommandSyntaxException {
++        CompoundTag var3 = var1.getData();
++        int var4 = var2.remove(var3);
++        if (var4 == 0) {
++            throw ERROR_MERGE_UNCHANGED.create();
++        } else {
++            var1.setData(var3);
++            var0.sendSuccess(var1.getModifiedSuccess(), true);
++            return var4;
++        }
++    }
++
++    private static Tag getSingleTag(NbtPath var0, DataAccessor var1) throws CommandSyntaxException {
++        Collection<Tag> var2 = var0.get(var1.getData());
++        Iterator<Tag> var3 = var2.iterator();
++        Tag var4 = (Tag)var3.next();
++        if (var3.hasNext()) {
++            throw ERROR_MULTIPLE_TAGS.create();
++        } else {
++            return var4;
++        }
++    }
++
++    private static int getData(CommandSourceStack var0, DataAccessor var1, NbtPath var2) throws CommandSyntaxException {
++        Tag var3 = getSingleTag(var2, var1);
++        int var4;
++        if (var3 instanceof NumericTag) {
++            var4 = Mth.floor(((NumericTag)var3).getAsDouble());
++        } else if (var3 instanceof CollectionTag) {
++            var4 = ((CollectionTag)var3).size();
++        } else if (var3 instanceof CompoundTag) {
++            var4 = ((CompoundTag)var3).size();
++        } else {
++            if (!(var3 instanceof StringTag)) {
++                throw ERROR_GET_NON_EXISTENT.create(var2.toString());
++            }
++
++            var4 = var3.getAsString().length();
++        }
++
++        var0.sendSuccess(var1.getPrintSuccess(var3), false);
++        return var4;
++    }
++
++    private static int getNumeric(CommandSourceStack var0, DataAccessor var1, NbtPath var2, double var3) throws CommandSyntaxException {
++        Tag var5 = getSingleTag(var2, var1);
++        if (!(var5 instanceof NumericTag)) {
++            throw ERROR_GET_NOT_NUMBER.create(var2.toString());
++        } else {
++            int var6 = Mth.floor(((NumericTag)var5).getAsDouble() * var3);
++            var0.sendSuccess(var1.getPrintSuccess(var2, var3, var6), false);
++            return var6;
++        }
++    }
++
++    private static int getData(CommandSourceStack var0, DataAccessor var1) throws CommandSyntaxException {
++        var0.sendSuccess(var1.getPrintSuccess(var1.getData()), false);
++        return 1;
++    }
++
++    private static int mergeData(CommandSourceStack var0, DataAccessor var1, CompoundTag var2) throws CommandSyntaxException {
++        CompoundTag var3 = var1.getData();
++        CompoundTag var4 = var3.copy().merge(var2);
++        if (var3.equals(var4)) {
++            throw ERROR_MERGE_UNCHANGED.create();
++        } else {
++            var1.setData(var4);
++            var0.sendSuccess(var1.getModifiedSuccess(), true);
++            return 1;
++        }
++    }
++
++    static {
++        ALL_PROVIDERS = ImmutableList.of(EntityDataAccessor.PROVIDER, BlockDataAccessor.PROVIDER, StorageDataAccessor.PROVIDER);
++        TARGET_PROVIDERS = (List)ALL_PROVIDERS.stream().map((var0) -> {
++            return (DataCommands.c)var0.apply("target");
++        }).collect(ImmutableList.toImmutableList());
++        SOURCE_PROVIDERS = (List)ALL_PROVIDERS.stream().map((var0) -> {
++            return (DataCommands.c)var0.apply("source");
++        }).collect(ImmutableList.toImmutableList());
++    }
++
++    public interface c {
++        DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
++
++        ArgumentBuilder<CommandSourceStack, ?> a(ArgumentBuilder<CommandSourceStack, ?> var1, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var2);
++    }
++
++    interface DataManipulatorDecorator {
++        ArgumentBuilder<CommandSourceStack, ?> create(DataCommands.DataManipulator var1);
++    }
++
++    interface DataManipulator {
++        int modify(CommandContext<CommandSourceStack> var1, CompoundTag var2, NbtPath var3, List<Tag> var4) throws CommandSyntaxException;
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/commands/data/EntityDataAccessor.java b/src/main/java/net/minecraft/server/commands/data/EntityDataAccessor.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3cb9a2c40b63757292e2d8cd7f8c88aa40a1f494
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/commands/data/EntityDataAccessor.java
+@@ -0,0 +1,72 @@
++//
++// Source code recreated from a .class file by IntelliJ IDEA
++// (powered by FernFlower decompiler)
++//
++
++package net.minecraft.server.commands.data;
++
++import com.mojang.brigadier.builder.ArgumentBuilder;
++import com.mojang.brigadier.context.CommandContext;
++import com.mojang.brigadier.exceptions.CommandSyntaxException;
++import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
++import java.util.Locale;
++import java.util.UUID;
++import java.util.function.Function;
++import net.minecraft.advancements.critereon.NbtPredicate;
++import net.minecraft.commands.CommandSourceStack;
++import net.minecraft.commands.Commands;
++import net.minecraft.commands.arguments.EntityArgument;
++import net.minecraft.commands.arguments.NbtPathArgument.NbtPath;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.nbt.Tag;
++import net.minecraft.network.chat.Component;
++import net.minecraft.network.chat.TranslatableComponent;
++import net.minecraft.server.commands.data.DataCommands.c;
++import net.minecraft.world.entity.Entity;
++import net.minecraft.world.entity.player.Player;
++
++public class EntityDataAccessor implements DataAccessor {
++    private static final SimpleCommandExceptionType ERROR_NO_PLAYERS = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.entity.invalid"));
++    public static final Function<String, c> PROVIDER = (var0) -> {
++        return new c() {
++            public DataAccessor access(CommandContext<CommandSourceStack> var0x) throws CommandSyntaxException {
++                return new EntityDataAccessor(EntityArgument.getEntity(var0x, var0));
++            }
++
++            public ArgumentBuilder<CommandSourceStack, ?> a(ArgumentBuilder<CommandSourceStack, ?> var0x, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var1) {
++                return var0x.then(Commands.literal("entity").then((ArgumentBuilder)var1.apply(Commands.argument(var0, EntityArgument.entity()))));
++            }
++        };
++    };
++    private final Entity entity;
++
++    public EntityDataAccessor(Entity var0) {
++        this.entity = var0;
++    }
++
++    public void setData(CompoundTag var0) throws CommandSyntaxException {
++        if (this.entity instanceof Player) {
++            throw ERROR_NO_PLAYERS.create();
++        } else {
++            UUID var1 = this.entity.getUUID();
++            this.entity.load(var0);
++            this.entity.setUUID(var1);
++        }
++    }
++
++    public CompoundTag getData() {
++        return NbtPredicate.getEntityTagToCompare(this.entity);
++    }
++
++    public Component getModifiedSuccess() {
++        return new TranslatableComponent("commands.data.entity.modified", new Object[]{this.entity.getDisplayName()});
++    }
++
++    public Component getPrintSuccess(Tag var0) {
++        return new TranslatableComponent("commands.data.entity.query", new Object[]{this.entity.getDisplayName(), var0.getPrettyDisplay()});
++    }
++
++    public Component getPrintSuccess(NbtPath var0, double var1, int var3) {
++        return new TranslatableComponent("commands.data.entity.get", new Object[]{var0, this.entity.getDisplayName(), String.format(Locale.ROOT, "%.2f", var1), var3});
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/commands/data/StorageDataAccessor.java b/src/main/java/net/minecraft/server/commands/data/StorageDataAccessor.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..9dbe3f9ffae7a75fcdc992f6a20dbd9b9c02010d
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/commands/data/StorageDataAccessor.java
+@@ -0,0 +1,72 @@
++//
++// Source code recreated from a .class file by IntelliJ IDEA
++// (powered by FernFlower decompiler)
++//
++
++package net.minecraft.server.commands.data;
++
++import com.mojang.brigadier.builder.ArgumentBuilder;
++import com.mojang.brigadier.context.CommandContext;
++import com.mojang.brigadier.suggestion.SuggestionProvider;
++import java.util.Locale;
++import java.util.function.Function;
++import net.minecraft.commands.CommandSourceStack;
++import net.minecraft.commands.Commands;
++import net.minecraft.commands.SharedSuggestionProvider;
++import net.minecraft.commands.arguments.ResourceLocationArgument;
++import net.minecraft.commands.arguments.NbtPathArgument.NbtPath;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.nbt.Tag;
++import net.minecraft.network.chat.Component;
++import net.minecraft.network.chat.TranslatableComponent;
++import net.minecraft.resources.ResourceLocation;
++import net.minecraft.server.commands.data.DataCommands.c;
++import net.minecraft.world.level.storage.CommandStorage;
++
++public class StorageDataAccessor implements DataAccessor {
++    private static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (var0, var1) -> {
++        return SharedSuggestionProvider.suggestResource(getGlobalTags(var0).keys(), var1);
++    };
++    public static final Function<String, c> PROVIDER = (var0) -> {
++        return new c() {
++            public DataAccessor access(CommandContext<CommandSourceStack> var0x) {
++                return new StorageDataAccessor(StorageDataAccessor.getGlobalTags(var0x), ResourceLocationArgument.getId(var0x, var0));
++            }
++
++            public ArgumentBuilder<CommandSourceStack, ?> a(ArgumentBuilder<CommandSourceStack, ?> var0x, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var1) {
++                return var0x.then(Commands.literal("storage").then((ArgumentBuilder)var1.apply(Commands.argument(var0, ResourceLocationArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE))));
++            }
++        };
++    };
++    private final CommandStorage storage;
++    private final ResourceLocation id;
++
++    private static CommandStorage getGlobalTags(CommandContext<CommandSourceStack> var0) {
++        return ((CommandSourceStack)var0.getSource()).getServer().getCommandStorage();
++    }
++
++    private StorageDataAccessor(CommandStorage var0, ResourceLocation var1) {
++        this.storage = var0;
++        this.id = var1;
++    }
++
++    public void setData(CompoundTag var0) {
++        this.storage.set(this.id, var0);
++    }
++
++    public CompoundTag getData() {
++        return this.storage.get(this.id);
++    }
++
++    public Component getModifiedSuccess() {
++        return new TranslatableComponent("commands.data.storage.modified", new Object[]{this.id});
++    }
++
++    public Component getPrintSuccess(Tag var0) {
++        return new TranslatableComponent("commands.data.storage.query", new Object[]{this.id, var0.getPrettyDisplay()});
++    }
++
++    public Component getPrintSuccess(NbtPath var0, double var1, int var3) {
++        return new TranslatableComponent("commands.data.storage.get", new Object[]{var0, this.id, String.format(Locale.ROOT, "%.2f", var1), var3});
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index bac292e6d8e6cdb239d8accd21eaa25022f5640f..992d87e59273c9f2b5931edad97738d1fb712c15 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -245,7 +245,7 @@ public class Main {
+                 }
+ 
+                 if (Main.class.getPackage().getImplementationVendor() != null && System.getProperty("IReallyKnowWhatIAmDoingISwear") == null) {
+-                    Date buildDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(Main.class.getPackage().getImplementationVendor()); // Paper
++                    Date buildDate = new SimpleDateFormat("yyyyMMdd-HHmm").parse(Main.class.getPackage().getImplementationVendor()); // Paper
+ 
+                     Calendar deadline = Calendar.getInstance();
+                     deadline.add(Calendar.DAY_OF_YEAR, -7);
+@@ -315,9 +315,9 @@ public class Main {
+             tryPreloadClass("com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent");
+             tryPreloadClass("com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent");
+             // Minecraft, seen during saving
+-            tryPreloadClass("net.minecraft.server.LightEngineLayerEventListener$Void");
+-            tryPreloadClass("net.minecraft.server.LightEngineLayerEventListener");
+-            tryPreloadClass("net.minecraft.server.ExceptionSuppressor");
++            tryPreloadClass("net.minecraft.world.level.lighting.LayerLightEventListener$DummyLightLayerEventListener");
++            tryPreloadClass("net.minecraft.world.level.lighting.LayerLightEventListener");
++            tryPreloadClass("net.minecraft.util.ExceptionCollector");
+             // Paper end
+         }
+     }
