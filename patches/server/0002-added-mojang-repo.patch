@@ -5,12 +5,12 @@ Subject: [PATCH] added mojang repo
 
 
 diff --git a/pom.xml b/pom.xml
-index 1d8b093e94cde81797cd954061be0c58ae8b2bfd..604a8cef667932f4c4d4940c2670e14e5f357640 100644
+index 594ab9afbd6249df8817eeb4eb50bffc986bfce1..7264eba9c2f6b69fd98e8bda2d2f233e51702c72 100644
 --- a/pom.xml
 +++ b/pom.xml
-@@ -165,6 +165,11 @@
-             <id>destroystokyo-repo</id>
-             <url>https://papermc.io/repo/repository/maven-public/</url>
+@@ -153,6 +153,11 @@
+             <id>spigotmc-public</id>
+             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
          </repository>
 +        <repository>
 +            <id>minecraft-libraries</id>

@@ -5,25 +5,6 @@ Subject: [PATCH] pipeline fix
 
 
 diff --git a/src/main/java/net/minecraft/server/EULA.java b/src/main/java/net/minecraft/server/Eula.java
-similarity index 97%
+similarity index 100%
 rename from src/main/java/net/minecraft/server/EULA.java
 rename to src/main/java/net/minecraft/server/Eula.java
-index 48d97ea03c2e089475842303af981d2c72fe5989..4be31e9f4e5ca8284d922b13b4829d907b341957 100644
---- a/src/main/java/net/minecraft/server/EULA.java
-+++ b/src/main/java/net/minecraft/server/Eula.java
-@@ -8,13 +8,13 @@ import net.minecraft.SharedConstants;
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
- 
--public class EULA {
-+public class Eula {
- 
-     private static final Logger LOGGER = LogManager.getLogger();
-     private final java.nio.file.Path file;
-     private final boolean agreed;
- 
--    public EULA(java.nio.file.Path java_nio_file_path) {
-+    public Eula(java.nio.file.Path java_nio_file_path) {
-         this.file = java_nio_file_path;
-         this.agreed = SharedConstants.IS_RUNNING_IN_IDE || this.readFile();
-     }
