@@ -4,6 +4,8 @@
 public net.minecraft.server.ChunkProviderServer$a
 public net.minecraft.server.LoginListener$EnumProtocolState
 public net.minecraft.server.DataBits$DataBitConsumer
+public net.minecraft.server.yp$a
+public net.minecraft.server.EntityBee$d
 
 # fields
 public net.minecraft.server.WorldServer hasPhysicsEvent
@@ -53,12 +55,21 @@ public-f net.minecraft.server.PacketPlayOutPlayerInfo$PlayerInfoData d
 public-f net.minecraft.server.PacketPlayOutPlayerInfo$PlayerInfoData e
 public net.minecraft.server.PacketPlayOutChat a
 public net.minecraft.server.VillagePlaceType professionCache
+public-f net.minecraft.server.AdvancementDataPlayer criterionData
+public net.minecraft.server.NibbleArray EMPTY_NIBBLE_ARRAY
+public net.minecraft.server.NibbleArray lightCacheKey
+public-f net.minecraft.server.IChunkLoader regionFileCache
+public-f net.minecraft.server.BlockBase stepSound
+public-f net.minecraft.server.AttributeMapBase b
+public net.minecraft.server.PacketPlayOutChat c
+public-f org.bukkit.craftbukkit.block.CraftBlockState world
+public-f org.bukkit.craftbukkit.block.CraftBlockState position
 # methods
 public net.minecraft.server.PlayerInventory getComponents()Ljava/util/List;
 public net.minecraft.server.EntityHuman releaseShoulderEntities()V;
 public net.minecraft.server.Entity setYawPitch(FF)V;
 public net.minecraft.server.PlayerChunkMap addEntity(Lnet/minecraft/server/Entity;)V;
-public net.minecraft.server.Block dropExperience(Lnet/minecraft/server/World;Lnet/minecraft/server/BlockPosition;ILnet/minecraft/server/EntityPlayer;)V;
+public net.minecraft.server.Block dropExperience(Lnet/minecraft/server/WorldServer;Lnet/minecraft/server/BlockPosition;ILnet/minecraft/server/EntityPlayer;)V;
 public net.minecraft.server.ChunkProviderServer addLoadedChunk(Lnet/minecraft/server/Chunk;)V;
 public net.minecraft.server.ChunkProviderServer removeLoadedChunk(Lnet/minecraft/server/Chunk;)V;
 public net.minecraft.server.IBlockAccess getTileEntity(Lnet/minecraft/server/BlockPosition;)Lnet/minecraft/server/TileEntity;
@@ -78,3 +89,13 @@ public net.minecraft.server.PlayerList getActivePlayer(Ljava/util/UUID;)Lnet/min
 public net.minecraft.server.NavigationAbstract a(Ljava/util/Set;IZI)Lnet/minecraft/server/PathEntity;
 public net.minecraft.server.RegionFileSection getSection(J)Ljava/util/Optional;
 public net.minecraft.server.VillagePlaceRecord decreaseVacancy()Z
+public net.minecraft.server.NetworkManager getPlayer()Lnet/minecraft/server/EntityPlayer;
+public net.minecraft.server.Entity k()Z
+public net.minecraft.server.EntityTurtle eU()Z
+public net.minecraft.server.EntitySlime m()F
+public com.destroystokyo.paper.server.ticklist.PaperTickList nextTick()V
+public net.minecraft.server.BaseBlockPosition o(I)V
+public net.minecraft.server.BaseBlockPosition p(I)V
+public net.minecraft.server.BaseBlockPosition q(I)V
+public net.minecraft.server.TickListServer nextTick()V
+public net.minecraft.server.AttributeMapBase a(Lnet/minecraft/server/AttributeModifiable;)V

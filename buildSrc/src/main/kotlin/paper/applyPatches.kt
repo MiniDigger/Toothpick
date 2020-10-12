@@ -26,7 +26,7 @@ fun applyPatches(project: Project): Task {
             code.mkdirs()
 
             val nmsPatches = File(cb, "nms-patches")
-            for (patch in nmsPatches.list()) {
+            nmsPatches.list().sorted().forEach { patch ->
                 val file = patch.substringBeforeLast(".") + ".java"
                 val inF = File(nmsDir, file)
                 val outF = File(code, file)
@@ -46,7 +46,7 @@ fun applyPatches(project: Project): Task {
             val cb = File(cbDir)
             val nmsPatches = File(cb, "nms-patches")
 
-            for (patch in nmsPatches.list()) {
+            nmsPatches.list().sorted().forEach { patch ->
                 val file = patch.substringBeforeLast(".") + ".java"
                 logger.lifecycle("Patching $file < $patch")
                 ensureSuccess(cmd("patch", "-s", "-d", "src/main/java/", "net/minecraft/server/$file", "$nmsPatches/$patch", directory = cb, printToStdout = true))

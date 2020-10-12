@@ -80,7 +80,7 @@ fun initRemappingTasks(project: Project, toothPick: ToothPickExtension): List<Ta
             project.logger.info("Reading mojang...")
             val mojangFile = projectDirectory.resolve("work/server.txt")
             if (!mojangFile.exists()) {
-                mojangFile.writeText(URL("https://launcher.mojang.com/v1/objects/618315f1fc2f56fe003612bb1fee1ad4060768a0/server.txt").readText())
+                mojangFile.writeText(URL(toothPick.serverMappings).readText())
             }
             val mojangMappings = MappingFormats.byId("proguard").read(mojangFile.toPath())
 
@@ -110,10 +110,8 @@ fun initRemappingTasks(project: Project, toothPick: ToothPickExtension): List<Ta
                 ensureSuccess(cmd("git", "clone", paper.absolutePath, remapped.absolutePath, directory = projectDirectory))
             }
 
-            // TODO reenable premapping
-//            ensureSuccess(cmd("git", "am", "--3way", projectDirectory.resolve("toothpick/preremapping.patch").absolutePath, directory = paper))
+            ensureSuccess(cmd("git", "am", "--3way", projectDirectory.resolve("toothpick/preremapping.patch").absolutePath, directory = paper))
 
-            // TODO fix me, we are losing paper-servers resources folder here
             if (Files.isDirectory(outputDir)) {
                 outputDir.toFile().deleteRecursively()
             }
@@ -135,7 +133,7 @@ fun initRemappingTasks(project: Project, toothPick: ToothPickExtension): List<Ta
             project.subprojects.filter { p -> p.name == "fake" }.forEach { p ->
                 p.configurations.filter { config -> config.isCanBeResolved }.forEach { config ->
                     config.resolvedConfiguration.files.filter { file ->
-                        !file.absolutePath.contains("build\\classes") || file.absolutePath.contains("build/classes")
+                        !(file.absolutePath.contains("build\\classes") || file.absolutePath.contains("build/classes"))
                     }.forEach { file ->
                         mercury.classPath.add(file.toPath())
                     }
